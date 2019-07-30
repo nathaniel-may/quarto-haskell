@@ -2,6 +2,8 @@ module Quarto where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Maybe (Maybe)
+import qualified Data.Maybe as Maybe
 
 data Color  = Black | White  deriving (Eq, Ord, Show, Read)
 data Shape  = Round | Square deriving (Eq, Ord, Show, Read)
@@ -17,7 +19,7 @@ indexes = [minBound..maxBound]
 
 data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
 
--- TODO make nonempty --
+-- TODO smart constructor checks --
 newtype Board = Board { tiles :: Map Tile Piece }
               deriving (Eq, Ord, Show, Read)
 
@@ -37,4 +39,6 @@ get b t = Map.lookup t $ tiles b
 
 -- TODO how many restrictions can I place here with LH? --
 place :: Board -> Tile -> Piece -> Maybe Board
-place = undefined
+place b t p = if not (contains b t) && notElem p (tiles b)
+              then Just . Board . Map.insert t p $ tiles b
+              else Nothing
