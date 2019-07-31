@@ -23,11 +23,16 @@ turn q = case q of
   Place (PlaceQuarto b _) -> if isEven b then Just P2 else Just P1
   Final _                 -> Nothing
 
+isTurn :: Quarto -> Player -> Bool
+isTurn q pl = turn q == Just pl
+
 pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
 pass q pl p = case q of
-  PassQuarto b -> (==pl) <$> turn (Pass q) >>= (\turn ->
-    if turn && not(containsPiece b p)
-    then Just $ PlaceQuarto b p
-    else Nothing)
+  PassQuarto b -> if isTurn (Pass q) pl && not(containsPiece b p)
+                  then Just $ PlaceQuarto b p
+                  else Nothing
 
-
+-- TODO requires is won --
+place :: PlaceQuarto -> Player -> Maybe (Either PassQuarto FinalQuarto)
+-- place q pl = (==pl) <$> turn (Place q) <&>
+place = undefined
