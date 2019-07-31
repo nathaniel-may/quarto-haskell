@@ -10,6 +10,11 @@ data Shape  = Round | Square deriving (Eq, Ord, Show, Read)
 data Height = Tall  | Short  deriving (Eq, Ord, Show, Read)
 data Top    = Flat  | Hole   deriving (Eq, Ord, Show, Read)
 
+data Attribute = C Color
+               | S Shape
+               | H Height
+               | T Top
+
 data Piece = Piece Color Shape Height Top deriving (Eq, Ord, Show, Read)
 
 data Index = I1 | I2 | I3 | I4 deriving (Eq, Ord, Enum, Bounded, Show, Read)
@@ -49,9 +54,22 @@ place b t p = if not (contains b t) && not (containsPiece b p)
 isEven :: Board -> Bool
 isEven b = size b `mod` 2 == 0
 
-data Diag = Forward | Backward deriving (Eq, Show, Read)
+data Line = Horizontal Index | Vertical Index | DiagonalForward | DiagonalBackward
+          deriving (Eq, Show, Read)
 
-data Line = Horizontal Index | Vertical Index | Diagonal Diag deriving (Eq, Show, Read)
+data WinningLine = WinningLine Line Attribute
 
-winningLines :: Board -> [Line]
+lines :: [Line]
+lines = [DiagonalForward, DiagonalBackward] <>
+        (Horizontal <$> indexes) <>
+        (Vertical   <$> indexes)
+
+-- TODO list of size 4 --
+lineTiles :: Line -> [Tile]
+lineTiles (Vertical   i)   = flip Tile i <$> indexes
+lineTiles (Horizontal i)   =      Tile i <$> indexes
+lineTiles DiagonalForward  = uncurry Tile <$> indexes `zip` reverse indexes
+lineTiles DiagonalBackward = uncurry Tile <$> reverse indexes `zip` indexes
+
+winningLines :: Board -> [(Line, Attribute)]
 winningLines = undefined
