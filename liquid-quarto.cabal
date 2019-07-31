@@ -17,7 +17,7 @@ category:            Game
 
 library
   exposed-modules:     Quarto
-  -- other-modules:
+  other-modules:       Board
   -- other-extensions:
   build-depends:       base ==4.11.*, containers ==0.5.*
   hs-source-dirs:      src/lib
