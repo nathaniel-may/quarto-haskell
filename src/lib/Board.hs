@@ -48,3 +48,10 @@ place b t p = if not (contains b t) && not (containsPiece b p)
 
 isEven :: Board -> Bool
 isEven b = size b `mod` 2 == 0
+
+data Diag = Forward | Backward deriving (Eq, Show, Read)
+
+data Line = Horizontal Index | Vertical Index | Diagonal Diag deriving (Eq, Show, Read)
+
+winningLines :: Board -> [Line]
+winningLines = undefined
