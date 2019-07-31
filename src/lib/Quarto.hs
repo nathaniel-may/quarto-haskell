@@ -42,3 +42,21 @@ place :: Board -> Tile -> Piece -> Maybe Board
 place b t p = if not (contains b t) && notElem p (tiles b)
               then Just . Board . Map.insert t p $ tiles b
               else Nothing
+
+data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
+
+data GameEnd = Winner Player | Tie deriving (Eq, Show, Read)
+
+-- TODO smart constructors --
+data PassQuarto  = PassQuarto  Board Piece   deriving (Eq, Show, Read)
+data PlaceQuarto = PlaceQuarto Board Piece   deriving (Eq, Show, Read)
+data FinalQuarto = FinalQuarto Board GameEnd deriving (Eq, Show, Read)
+
+isEven :: Board -> Bool
+isEven b = size b `mod` 2 == 0
+
+passTurn :: PassQuarto -> Player
+passTurn (PassQuarto b _) = if isEven b then P1 else P2
+
+placeTurn :: PlaceQuarto -> Player
+placeTurn (PlaceQuarto b _) = if isEven b then P1 else P2
