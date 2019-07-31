@@ -52,11 +52,15 @@ data PassQuarto  = PassQuarto  Board Piece   deriving (Eq, Show, Read)
 data PlaceQuarto = PlaceQuarto Board Piece   deriving (Eq, Show, Read)
 data FinalQuarto = FinalQuarto Board GameEnd deriving (Eq, Show, Read)
 
+data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
+
 isEven :: Board -> Bool
 isEven b = size b `mod` 2 == 0
 
-passTurn :: PassQuarto -> Player
-passTurn (PassQuarto b _) = if isEven b then P1 else P2
+turn :: Quarto -> Maybe Player
+turn q = case q of
+  Pass  (PassQuarto  b _) -> if isEven b then Just P1 else Just P2
+  Place (PlaceQuarto b _) -> if isEven b then Just P2 else Just P1
+  Final _                 -> Nothing
 
-placeTurn :: PlaceQuarto -> Player
-placeTurn (PlaceQuarto b _) = if isEven b then P1 else P2
+
