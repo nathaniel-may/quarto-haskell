@@ -6,6 +6,8 @@ import Data.Maybe (Maybe, catMaybes)
 import qualified Data.Maybe as Maybe
 import qualified Data.List as List
 
+import Lib (same)
+
 data Color  = Black | White  deriving (Eq, Ord, Show, Read)
 data Shape  = Round | Square deriving (Eq, Ord, Show, Read)
 data Height = Tall  | Short  deriving (Eq, Ord, Show, Read)
@@ -96,12 +98,6 @@ lineTiles (Vertical   i)   = flip Tile i <$> indexes
 lineTiles (Horizontal i)   =      Tile i <$> indexes
 lineTiles DiagonalForward  = uncurry Tile <$> indexes `zip` reverse indexes
 lineTiles DiagonalBackward = uncurry Tile <$> reverse indexes `zip` indexes
-
-same :: Eq a => [a] -> [a] -> [a]
-same (x:xs) ys = if x `elem` ys
-                 then x : same xs (List.delete x ys)
-                 else same xs ys
-same _ _ = []
 
 isWin :: Board -> Line -> [WinningLine]
 isWin b line =
