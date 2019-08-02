@@ -104,7 +104,6 @@ same (x:xs) ys = if x `elem` ys
 same _ _ = []
 
 isWin :: Board -> Line -> [WinningLine]
--- isWin = undefined
 isWin b line =
   fmap (WinningLine line) .
   foldr same [] .
@@ -115,6 +114,3 @@ isWin b line =
 
 winningLines :: Board -> [WinningLine]
 winningLines b = isWin b =<< Board.lines
-
-test :: [Int] -> [Int]
-test xs = (+3) . (+2) <$> xs
