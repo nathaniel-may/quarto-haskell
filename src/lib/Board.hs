@@ -8,6 +8,7 @@ import qualified Data.List as List
 
 import Lib (same)
 
+
 data Color  = Black | White  deriving (Eq, Ord, Show, Read)
 data Shape  = Round | Square deriving (Eq, Ord, Show, Read)
 data Height = Tall  | Short  deriving (Eq, Ord, Show, Read)
@@ -21,6 +22,19 @@ data Property = PropColor Color
               | PropHeight Height
               | PropTop Top
 
+data Piece = Piece Color Shape Height Top
+           deriving (Eq, Ord, Show, Read)
+
+data Index = I1 | I2 | I3 | I4
+           deriving (Eq, Ord, Enum, Bounded, Show, Read)
+
+data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
+
+-- TODO smart constructor checks --
+newtype Board = Board { tiles :: Map Tile Piece }
+              deriving (Eq, Ord, Show, Read)
+              
+
 attr :: Property -> Attribute
 attr p = case p of
   PropColor  White  -> W
@@ -32,26 +46,14 @@ attr p = case p of
   PropTop    Flat   -> F
   PropTop    Hole   -> H
 
-data Piece = Piece Color Shape Height Top
-           deriving (Eq, Ord, Show, Read)
-
 attrs :: Piece -> [Attribute]
 attrs (Piece c s h t) = [attr $ PropColor c,
                          attr $ PropShape s,
                          attr $ PropHeight h,
                          attr $ PropTop t]
 
-data Index = I1 | I2 | I3 | I4
-           deriving (Eq, Ord, Enum, Bounded, Show, Read)
-
 indexes :: [Index]
 indexes = [minBound..maxBound]
-
-data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
-
--- TODO smart constructor checks --
-newtype Board = Board { tiles :: Map Tile Piece }
-              deriving (Eq, Ord, Show, Read)
 
 isFull :: Board -> Bool
 isFull b = size b >= 16
@@ -78,35 +80,3 @@ place b t p = if not (contains b t) && not (containsPiece b p)
 
 isEven :: Board -> Bool
 isEven b = size b `mod` 2 == 0
-
-data Line = Horizontal Index
-          | Vertical Index
-          | DiagonalForward
-          | DiagonalBackward
-          deriving (Eq, Show, Read)
-
-data WinningLine = WinningLine Line Attribute
-
-lines :: [Line]
-lines = [DiagonalForward, DiagonalBackward] <>
-        (Horizontal <$> indexes) <>
-        (Vertical   <$> indexes)
-
--- TODO list of size 4 --
-lineTiles :: Line -> [Tile]
-lineTiles (Vertical   i)   = flip Tile i <$> indexes
-lineTiles (Horizontal i)   =      Tile i <$> indexes
-lineTiles DiagonalForward  = uncurry Tile <$> indexes `zip` reverse indexes
-lineTiles DiagonalBackward = uncurry Tile <$> reverse indexes `zip` indexes
-
-isWin :: Board -> Line -> [WinningLine]
-isWin b line =
-  fmap (WinningLine line) .
-  foldr same [] .
-  filter (\x -> 4 == length x) .
-  catMaybes $
-  fmap attrs .
-  get b <$> lineTiles line
-
-winningLines :: Board -> [WinningLine]
-winningLines b = isWin b =<< Board.lines
