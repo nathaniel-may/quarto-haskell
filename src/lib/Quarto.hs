@@ -2,6 +2,8 @@ module Quarto where
 
 import Data.Maybe (Maybe, mapMaybe)
 import Data.List.NonEmpty (NonEmpty((:|)), nonEmpty)
+import Data.Functor (($>))
+import Control.Monad (guard)
 import Prelude hiding (lines)
 
 import Board
@@ -38,10 +40,8 @@ isTurn :: Quarto -> Player -> Bool
 isTurn q pl = turn q == Just pl
 
 pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
-pass q pl p = case q of
-  PassQuarto b -> if isTurn (Pass q) pl && not (b `containsPiece` p)
-                  then Just $ PlaceQuarto b p
-                  else Nothing
+pass q @ (PassQuarto b) pl p =
+  guard (isTurn (Pass q) pl && not (containsPiece b p)) $> PlaceQuarto b p
 
 -- TODO requires is won --
 place :: PlaceQuarto -> Player -> Maybe (Either PassQuarto FinalQuarto)
