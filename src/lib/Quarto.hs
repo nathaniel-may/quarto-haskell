@@ -1,6 +1,7 @@
 module Quarto where
 
 import Data.Maybe (Maybe, mapMaybe)
+import Data.List.NonEmpty (NonEmpty((:|)), nonEmpty)
 import Prelude hiding (lines)
 
 import Board
@@ -61,7 +62,8 @@ lineTiles DiagonalBackward = zipWith Tile (reverse indexes) indexes
 
 isWin :: Board -> Line -> [WinningLine]
 isWin b line = fmap (WinningLine line)
-             . foldr same []
+             . concatMap (foldr1 same)
+             . nonEmpty
              . filter ((==4) . length)
              . mapMaybe (fmap attrs . get b) $ lineTiles line
 
