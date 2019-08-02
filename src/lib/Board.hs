@@ -3,7 +3,6 @@ module Board where
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe, catMaybes)
-import qualified Data.Maybe as Maybe
 import qualified Data.List as List
 
 import Lib (same)
@@ -33,7 +32,7 @@ data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
 -- TODO smart constructor checks --
 newtype Board = Board { tiles :: Map Tile Piece }
               deriving (Eq, Ord, Show, Read)
-              
+
 
 attr :: Property -> Attribute
 attr p = case p of
@@ -74,7 +73,7 @@ get b t = Map.lookup t $ tiles b
 
 -- TODO how many restrictions can I place here with LH? --
 place :: Board -> Tile -> Piece -> Maybe Board
-place b t p = if not (contains b t) && not (containsPiece b p)
+place b t p = if not (contains b t) && not (b `containsPiece` p)
               then Just . Board . Map.insert t p $ tiles b
               else Nothing
 

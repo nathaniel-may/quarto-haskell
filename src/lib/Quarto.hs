@@ -1,7 +1,7 @@
 module Quarto where
 
-import Data.Maybe (Maybe, catMaybes)
-import qualified Data.Maybe as Maybe
+import Data.Maybe (Maybe, mapMaybe)
+import Prelude hiding (lines)
 
 import Board
 import Lib (same)
@@ -38,7 +38,7 @@ isTurn q pl = turn q == Just pl
 
 pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
 pass q pl p = case q of
-  PassQuarto b -> if isTurn (Pass q) pl && not(containsPiece b p)
+  PassQuarto b -> if isTurn (Pass q) pl && not (b `containsPiece` p)
                   then Just $ PlaceQuarto b p
                   else Nothing
 
@@ -48,25 +48,22 @@ place :: PlaceQuarto -> Player -> Maybe (Either PassQuarto FinalQuarto)
 place = undefined
 
 lines :: [Line]
-lines = [DiagonalForward, DiagonalBackward] <>
-        (Horizontal <$> indexes) <>
-        (Vertical   <$> indexes)
+lines = [DiagonalForward, DiagonalBackward]
+     <> (Horizontal <$> indexes)
+     <> (Vertical   <$> indexes)
 
 -- TODO list of size 4 --
 lineTiles :: Line -> [Tile]
 lineTiles (Vertical   i)   = flip Tile i <$> indexes
 lineTiles (Horizontal i)   =      Tile i <$> indexes
-lineTiles DiagonalForward  = uncurry Tile <$> indexes `zip` reverse indexes
-lineTiles DiagonalBackward = uncurry Tile <$> reverse indexes `zip` indexes
+lineTiles DiagonalForward  = zipWith Tile indexes $ reverse indexes
+lineTiles DiagonalBackward = zipWith Tile (reverse indexes) indexes
 
 isWin :: Board -> Line -> [WinningLine]
-isWin b line =
-  fmap (WinningLine line) .
-  foldr same [] .
-  filter (\x -> 4 == length x) .
-  catMaybes $
-  fmap attrs .
-  get b <$> lineTiles line
+isWin b line = fmap (WinningLine line)
+             . foldr same []
+             . filter ((==4) . length)
+             . mapMaybe (fmap attrs . get b) $ lineTiles line
 
 winningLines :: Board -> [WinningLine]
-winningLines b = isWin b =<< Quarto.lines
+winningLines b = isWin b =<< lines
