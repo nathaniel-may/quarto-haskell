@@ -7,7 +7,7 @@ jobs:
       - checkout
       - restore_cache:
           name: Restore Cached Dependencies
-          key: {{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}-{{ checksum "liquid-quarto.cabal" }}
+          key: haskell-dependencies-{{ checksum "stack.yaml" }}-{{ checksum "liquid-quarto.cabal" }}
       - run:
           name: Resolve/Update Dependencies
           command: stack --no-terminal setup
@@ -16,7 +16,7 @@ jobs:
           command: stack --no-terminal test
       - save_cache:
           name: Cache Dependencies
-          key: {{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}-{{ checksum "liquid-quarto.cabal" }}
+          key: haskell-dependencies-{{ checksum "stack.yaml" }}-{{ checksum "liquid-quarto.cabal" }}
           paths:
             - "/root/.stack"
             - ".stack-work"
