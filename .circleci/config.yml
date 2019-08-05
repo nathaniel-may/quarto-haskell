@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Resolve/Update Dependencies
           command: stack --no-terminal setup
-      - compile:
+      - run:
           name: Compile
           command: stack --no-terminal build
       - run:
