@@ -43,10 +43,11 @@ pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
 pass q @ (PassQuarto b) pl p =
   guard (isTurn (Pass q) pl && not (containsPiece b p)) $> PlaceQuarto b p
 
--- TODO requires is won --
-place :: PlaceQuarto -> Player -> Maybe (Either PassQuarto FinalQuarto)
--- place q pl = (==pl) <$> turn (Place q) <&>
-place = undefined
+place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
+place q @ (PlaceQuarto b p) pl t = (\newBoard ->
+  if null $ winningLines newBoard
+  then Left  $ PassQuarto  newBoard
+  else Right $ FinalQuarto newBoard (Winner pl)) <$> Board.place b t p
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
