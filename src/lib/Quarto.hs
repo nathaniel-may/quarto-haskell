@@ -45,9 +45,11 @@ pass q @ (PassQuarto b) pl p =
 
 place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
 place q @ (PlaceQuarto b p) pl t = (\newBoard ->
-    if null $ winningLines newBoard
+    if null (winningLines newBoard) && not (isFull newBoard)
     then Left  $ PassQuarto  newBoard
-    else Right $ FinalQuarto newBoard (Winner pl))
+    else if isFull newBoard
+      then Right $ FinalQuarto newBoard Tie
+      else Right $ FinalQuarto newBoard (Winner pl))
   <$> (guard (isTurn (Place q) pl)
   *> Board.place b t p)
 
