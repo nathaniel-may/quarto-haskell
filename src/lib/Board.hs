@@ -4,8 +4,9 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 import qualified Data.List as List
+import Data.List (zip4)
 
-import Lib (same)
+import Lib (same, uncurry4)
 
 
 data Color  = Black | White  deriving (Eq, Show, Read)
@@ -53,6 +54,14 @@ attrs (Piece c s h t) = [attr $ PropColor c,
 
 indexes :: [Index]
 indexes = [minBound..maxBound]
+
+allPieces :: [Piece]
+allPieces =
+  uncurry4 Piece <$>
+  zip4 [Black, White] [Round, Square] [Tall, Short] [Flat, Hole]
+
+allTiles :: [Tile]
+allTiles = uncurry Tile <$> [(h,v) | h <- indexes, v <- indexes]
 
 isFull :: Board -> Bool
 isFull b = size b >= 16

@@ -17,19 +17,13 @@ import Board (
   , Height(..)
   , Top(..)
   , indexes
+  , allPieces
+  , allTiles
   , place
   , contains
   , containsPiece
   , isFull)
 import Lib (uncurry4, third)
-
-allPieces :: [Piece]
-allPieces =
-  uncurry4 Piece <$>
-  zip4 [Black, White] [Round, Square] [Tall, Short] [Flat, Hole]
-
-allTiles :: [Tile]
-allTiles = uncurry Tile <$> [(h,v) | h <- indexes, v <- indexes]
 
 playerGen :: Gen Player
 playerGen = elements [P1, P2]
