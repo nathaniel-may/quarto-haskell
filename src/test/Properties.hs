@@ -41,7 +41,7 @@ boardGen = Board . Map.fromList <$> do
 
 boardPlayerGen :: Gen (Board, Player)
 boardPlayerGen = do
-  b  <- boardGen
+  b <- boardGen
   (,) b <$> playerGen
 
 prop_boardPlace
@@ -54,6 +54,14 @@ prop_boardPlace
             then isNothing $ place b t p
             else place b t p == (Just . Board . Map.insert t p $ tiles b))
 
+prop_boardContains
+    = forAll (do
+        b <- boardGen
+        (,) b <$> elements allTiles) (\case
+          (b, t) ->
+            if not . null . Map.lookup t $ tiles b
+            then b `contains` t
+            else not $ b `contains` t)
 
 return []
 main = $quickCheckAll
