@@ -19,7 +19,8 @@ import Board (
   , indexes
   , place
   , contains
-  , containsPiece )
+  , containsPiece
+  , isFull)
 import Lib (uncurry4, third)
 
 allPieces :: [Piece]
@@ -71,6 +72,12 @@ prop_boardContainsPiece
             if elem p $ tiles b
             then b `containsPiece` p
             else not $ b `containsPiece` p)
+
+prop_boardIsFull
+    = forAll boardGen (\b ->
+      if 16 == length (tiles b)
+      then isFull b
+      else not $ isFull b)
 
 return []
 main = $quickCheckAll
