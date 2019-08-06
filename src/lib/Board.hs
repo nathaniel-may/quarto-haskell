@@ -2,16 +2,16 @@ module Board where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (Maybe, catMaybes)
+import Data.Maybe (Maybe)
 import qualified Data.List as List
 
 import Lib (same)
 
 
-data Color  = Black | White  deriving (Eq, Ord, Show, Read)
-data Shape  = Round | Square deriving (Eq, Ord, Show, Read)
-data Height = Tall  | Short  deriving (Eq, Ord, Show, Read)
-data Top    = Flat  | Hole   deriving (Eq, Ord, Show, Read)
+data Color  = Black | White  deriving (Eq, Show, Read)
+data Shape  = Round | Square deriving (Eq, Show, Read)
+data Height = Tall  | Short  deriving (Eq, Show, Read)
+data Top    = Flat  | Hole   deriving (Eq, Show, Read)
 
 data Attribute = W | B | R | Q | S | T | F | H
                deriving (Eq, Show, Read)
@@ -22,7 +22,7 @@ data Property = PropColor Color
               | PropTop Top
 
 data Piece = Piece Color Shape Height Top
-           deriving (Eq, Ord, Show, Read)
+           deriving (Eq, Show, Read)
 
 data Index = I1 | I2 | I3 | I4
            deriving (Eq, Ord, Enum, Bounded, Show, Read)
@@ -31,7 +31,7 @@ data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
 
 -- TODO smart constructor checks --
 newtype Board = Board { tiles :: Map Tile Piece }
-              deriving (Eq, Ord, Show, Read)
+              deriving (Eq, Show, Read)
 
 
 attr :: Property -> Attribute
