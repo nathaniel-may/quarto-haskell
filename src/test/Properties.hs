@@ -1,22 +1,59 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 
 import Test.QuickCheck
-import Data.List (intercalate)
+import Data.List (zip4)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Maybe (isNothing)
 
-unsplit :: Char -> [String] -> String
-unsplit c = intercalate [c]
+import Quarto (Player(P1), Player(P2))
+import Board (
+    Board(..)
+  , Piece(..)
+  , Tile(..)
+  , Color(..)
+  , Shape(..)
+  , Height(..)
+  , Top(..)
+  , indexes
+  , place
+  , contains
+  , containsPiece )
+import Lib (uncurry4, third)
 
-split :: Char -> String -> [String]
-split c xs = xs' : if null xs'' then [] else split c (tail xs'')
-    where xs' = takeWhile (/=c) xs
-          xs''= dropWhile (/=c) xs
+allPieces :: [Piece]
+allPieces =
+  uncurry4 Piece <$>
+  zip4 [Black, White] [Round, Square] [Tall, Short] [Flat, Hole]
 
-prop_split_inv xs
-    = forAll (elements xs) $ \c ->
-      unsplit c (split c xs) == xs
+allTiles :: [Tile]
+allTiles = uncurry Tile <$> [(h,v) | h <- indexes, v <- indexes]
 
-prop_split_inv2 xs
-    = prop_split_inv
+playerGen :: Gen Player
+playerGen = elements [P1, P2]
+
+boardGen :: Gen Board
+boardGen = Board . Map.fromList <$> do
+  tiles  <- sublistOf =<< shuffle allTiles
+  pieces <- sublistOf =<< shuffle allPieces
+  pure $ zip tiles pieces
+
+boardPlayerGen :: Gen (Board, Player)
+boardPlayerGen = do
+  b  <- boardGen
+  (,) b <$> playerGen
+
+prop_boardPlace
+    = forAll (do
+        b <- boardGen
+        t <- elements allTiles
+        (,,) b t <$> elements allPieces) (\case
+          (b, t, p) ->
+            if b `contains` t || b `containsPiece` p
+            then isNothing $ place b t p
+            else place b t p == (Just . Board . Map.insert t p $ tiles b))
+
 
 return []
 main = $quickCheckAll
