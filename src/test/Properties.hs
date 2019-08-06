@@ -63,5 +63,14 @@ prop_boardContains
             then b `contains` t
             else not $ b `contains` t)
 
+prop_boardContainsPiece
+    = forAll (do
+        b <- boardGen
+        (,) b <$> elements allPieces) (\case
+          (b, p) ->
+            if elem p $ tiles b
+            then b `containsPiece` p
+            else not $ b `containsPiece` p)
+
 return []
 main = $quickCheckAll
