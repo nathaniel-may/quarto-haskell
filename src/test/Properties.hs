@@ -75,9 +75,9 @@ prop_boardContainsPiece
 
 prop_boardIsFull
     = forAll boardGen (\b ->
-      if 16 == length (tiles b)
-      then isFull b
-      else not $ isFull b)
+        if 16 == length (tiles b)
+        then isFull b
+        else not $ isFull b)
 
 return []
 main = $quickCheckAll
