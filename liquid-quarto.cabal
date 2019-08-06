@@ -16,8 +16,8 @@ maintainer:          nathanieldmay@gmail.com
 category:            Game
 
 library
-  exposed-modules:     Quarto
-  other-modules:       Board, Lib
+  exposed-modules:     Quarto, Board, Lib
+  -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*
                      , containers ==0.6.*
@@ -25,16 +25,19 @@ library
   default-language:    Haskell2010
 
 executable liquid-quarto
-  main-is:             Main.hs
-  build-depends:       base ==4.12.*
-                     , liquid-quarto
-  hs-source-dirs:      src/exe
-  default-language:    Haskell2010
+  main-is:          Main.hs
+  build-depends:    base ==4.12.*
+                  , liquid-quarto
+  hs-source-dirs:   src/exe
+  default-language: Haskell2010
 
 test-suite quickcheck
-  type:           exitcode-stdio-1.0
-  hs-source-dirs: src/test
-  main-is:        Properties.hs
-  build-depends:  base ==4.12.*
-                , QuickCheck ==2.12.*
-                , quickcheck-instances ==0.3.*
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   src/test
+  main-is:          Properties.hs
+  build-depends:    liquid-quarto
+                  , base ==4.12.*
+                  , containers ==0.6.*
+                  , QuickCheck ==2.12.*
+                  , quickcheck-instances ==0.3.*
+  default-language: Haskell2010
