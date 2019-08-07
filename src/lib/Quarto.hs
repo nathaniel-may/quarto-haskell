@@ -1,13 +1,13 @@
 module Quarto where
 
 import Data.Maybe (Maybe, mapMaybe)
-import Data.List.NonEmpty (NonEmpty((:|)), nonEmpty)
+import Data.List (delete)
+import Data.List.NonEmpty (nonEmpty)
 import Data.Functor (($>))
 import Control.Monad (guard)
 import Prelude hiding (lines)
 
 import Board
-import Lib (same)
 
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
@@ -43,6 +43,7 @@ pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
 pass q @ (PassQuarto b) pl p =
   guard (isTurn (Pass q) pl && not (containsPiece b p)) $> PlaceQuarto b p
 
+-- TODO refactor if else then --
 place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
 place q @ (PlaceQuarto b p) pl t = (\newBoard ->
     if null (winningLines newBoard) && not (isFull newBoard)
@@ -64,6 +65,13 @@ lineTiles (Vertical   i)   = flip Tile i <$> indexes
 lineTiles (Horizontal i)   =      Tile i <$> indexes
 lineTiles DiagonalForward  = zipWith Tile indexes $ reverse indexes
 lineTiles DiagonalBackward = zipWith Tile (reverse indexes) indexes
+
+same :: Eq a => [a] -> [a] -> [a]
+same [] _ = []
+same _ [] = []
+same (x:xs) ys = if x `elem` ys
+                 then x : same xs (delete x ys)
+                 else same xs ys
 
 isWin :: Board -> Line -> [WinningLine]
 isWin b line = fmap (WinningLine line)

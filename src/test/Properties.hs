@@ -1,77 +1,86 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
 
 import Test.QuickCheck
+
 import Data.List (zip4)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (isNothing)
 
-import Quarto (Player(P1), Player(P2))
-import Board (
-    Board(..)
-  , Piece(..)
-  , Tile(..)
-  , Color(..)
-  , Shape(..)
-  , Height(..)
-  , Top(..)
-  , indexes
-  , allPieces
-  , allTiles
-  , place
-  , contains
-  , containsPiece
-  , isFull)
-import Lib (uncurry4, third)
+import Quarto (Player(..))
+import Board hiding (Property)
 
-playerGen :: Gen Player
-playerGen = elements [P1, P2]
+-- if and only if --
+iff :: Bool -> Bool -> Bool
+iff = (==)
+infix 3 `iff`
 
-boardGen :: Gen Board
-boardGen = Board . Map.fromList <$> do
-  tiles  <- sublistOf =<< shuffle allTiles
-  pieces <- sublistOf =<< shuffle allPieces
-  pure $ zip tiles pieces
+shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
+shrinkBoundedEnum x = takeWhile (/= x) [minBound..maxBound]
 
-boardPlayerGen :: Gen (Board, Player)
-boardPlayerGen = do
-  b <- boardGen
-  (,) b <$> playerGen
+instance Arbitrary Player where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
 
-prop_boardPlace
-    = forAll (do
-        b <- boardGen
-        t <- elements allTiles
-        (,,) b t <$> elements allPieces) (\case
-          (b, t, p) ->
-            if b `contains` t || b `containsPiece` p
-            then isNothing $ place b t p
-            else place b t p == (Just . Board . Map.insert t p $ tiles b))
+instance Arbitrary Board where
+  arbitrary = Board . Map.fromList <$> do
+    tiles  <- sublistOf =<< shuffle allTiles
+    pieces <- sublistOf =<< shuffle allPieces
+    pure $ zip tiles pieces
+  shrink (Board b) = [Board $ Map.deleteAt i b | i <- [0 .. length b - 1]]
 
-prop_boardContains
-    = forAll (do
-        b <- boardGen
-        (,) b <$> elements allTiles) (\case
-          (b, t) ->
-            if not . null . Map.lookup t $ tiles b
-            then b `contains` t
-            else not $ b `contains` t)
+instance Arbitrary Index where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
 
-prop_boardContainsPiece
-    = forAll (do
-        b <- boardGen
-        (,) b <$> elements allPieces) (\case
-          (b, p) ->
-            if elem p $ tiles b
-            then b `containsPiece` p
-            else not $ b `containsPiece` p)
+instance Arbitrary Tile where
+  arbitrary = Tile <$> arbitrary <*> arbitrary
+  shrink (Tile x y) =  [Tile x' y  | x' <- shrink x]
+                    ++ [Tile x  y' | y' <- shrink y]
 
-prop_boardIsFull
-    = forAll boardGen (\b ->
-        if 16 == length (tiles b)
-        then isFull b
-        else not $ isFull b)
+instance Arbitrary Color where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
 
-return []
+instance Arbitrary Shape where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
+
+instance Arbitrary Height where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
+
+instance Arbitrary Top where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
+
+instance Arbitrary Piece where
+  arbitrary = Piece <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  shrink (Piece c s h t) =
+       [Piece c' s  h  t  | c' <- shrink c]
+    ++ [Piece c  s' h  t  | s' <- shrink s]
+    ++ [Piece c  s  h' t  | h' <- shrink h]
+    ++ [Piece c  s  h  t' | t' <- shrink t]
+
+prop_boardPlace :: Board -> Tile -> Piece -> Bool
+prop_boardPlace b t p
+  | b `contains` t || b `containsPiece` p
+    = isNothing $ place b t p
+  | otherwise
+    = place b t p == Just (Board . Map.insert t p $ tiles b)
+
+prop_boardContains :: Board -> Tile -> Bool
+prop_boardContains b t =
+  (not . null . Map.lookup t $ tiles b) `iff` (b `contains` t)
+
+prop_boardContainsPiece :: Board -> Piece -> Bool
+prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `containsPiece` p)
+
+prop_boardIsFull :: Board -> Bool
+prop_boardIsFull b = length (tiles b) == 16 `iff` isFull b
+
+
+pure []
+
+main :: IO Bool
 main = $quickCheckAll

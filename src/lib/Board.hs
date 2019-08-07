@@ -3,19 +3,16 @@ module Board where
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
-import qualified Data.List as List
-import Data.List (zip4)
-
-import Lib (same, uncurry4)
+import Data.List.Extra (enumerate)
 
 
-data Color  = Black | White  deriving (Eq, Show, Read)
-data Shape  = Round | Square deriving (Eq, Show, Read)
-data Height = Tall  | Short  deriving (Eq, Show, Read)
-data Top    = Flat  | Hole   deriving (Eq, Show, Read)
+data Color  = Black | White  deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Height = Tall  | Short  deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 data Attribute = W | B | R | Q | S | T | F | H
-               deriving (Eq, Show, Read)
+               deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 data Property = PropColor Color
               | PropShape Shape
@@ -26,9 +23,9 @@ data Piece = Piece Color Shape Height Top
            deriving (Eq, Show, Read)
 
 data Index = I1 | I2 | I3 | I4
-           deriving (Eq, Ord, Enum, Bounded, Show, Read)
+           deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
-data Tile = Tile Index Index deriving (Eq, Ord, Show, Read)
+data Tile = Tile Index Index deriving (Eq, Ord, Bounded, Show, Read)
 
 -- TODO smart constructor checks --
 newtype Board = Board { tiles :: Map Tile Piece }
@@ -56,12 +53,13 @@ indexes :: [Index]
 indexes = [minBound..maxBound]
 
 allPieces :: [Piece]
-allPieces =
-  uncurry4 Piece <$>
-  zip4 [Black, White] [Round, Square] [Tall, Short] [Flat, Hole]
+allPieces = [ Piece c s h t | c <- enumerate
+                            , s <- enumerate
+                            , h <- enumerate
+                            , t <- enumerate ]
 
 allTiles :: [Tile]
-allTiles = uncurry Tile <$> [(h,v) | h <- indexes, v <- indexes]
+allTiles = [ Tile h v | h <- indexes, v <- indexes ]
 
 isFull :: Board -> Bool
 isFull b = size b >= 16
@@ -74,7 +72,7 @@ contains :: Board -> Tile -> Bool
 contains b = not . null . get b
 
 containsPiece :: Board -> Piece -> Bool
-containsPiece b p = elem p $ tiles b
+containsPiece b p = p `elem` tiles b
 
 -- TODO can I get rid of the maybe with LH? --
 get :: Board -> Tile -> Maybe Piece
@@ -82,9 +80,12 @@ get b t = Map.lookup t $ tiles b
 
 -- TODO how many restrictions can I place here with LH? --
 place :: Board -> Tile -> Piece -> Maybe Board
-place b t p = if not (contains b t) && not (b `containsPiece` p)
-              then Just . Board . Map.insert t p $ tiles b
-              else Nothing
+place b t p
+  | not (contains b t) && not (b `containsPiece` p) =
+    Just . Board . Map.insert t p $ tiles b
+  | otherwise =
+    Nothing
 
+-- TODO drop is
 isEven :: Board -> Bool
-isEven b = size b `mod` 2 == 0
+isEven = even . size
