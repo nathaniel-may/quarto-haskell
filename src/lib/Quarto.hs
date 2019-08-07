@@ -5,7 +5,7 @@ import Data.List (delete)
 import Data.List.NonEmpty (nonEmpty)
 import Data.Functor (($>))
 import Control.Monad (guard)
-import Prelude hiding (lines)
+import Prelude hiding (lines, even)
 
 import Board
 
@@ -32,8 +32,8 @@ data WinningLine = WinningLine Line Attribute
 
 turn :: Quarto -> Maybe Player
 turn q = case q of
-  Pass  (PassQuarto  b  ) -> if isEven b then Just P1 else Just P2
-  Place (PlaceQuarto b _) -> if isEven b then Just P2 else Just P1
+  Pass  (PassQuarto  b  ) -> if even b then Just P1 else Just P2
+  Place (PlaceQuarto b _) -> if even b then Just P2 else Just P1
   Final _                 -> Nothing
 
 isTurn :: Quarto -> Player -> Bool
@@ -46,9 +46,9 @@ pass q @ (PassQuarto b) pl p =
 -- TODO refactor if else then --
 place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
 place q @ (PlaceQuarto b p) pl t = (\newBoard ->
-    if null (winningLines newBoard) && not (isFull newBoard)
+    if null (winningLines newBoard) && not (full newBoard)
     then Left  $ PassQuarto  newBoard
-    else if isFull newBoard
+    else if full newBoard
       then Right $ FinalQuarto newBoard Tie
       else Right $ FinalQuarto newBoard (Winner pl))
   <$> (guard (isTurn (Place q) pl)

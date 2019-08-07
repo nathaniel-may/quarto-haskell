@@ -76,8 +76,8 @@ prop_boardContains b t =
 prop_boardContainsPiece :: Board -> Piece -> Bool
 prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `containsPiece` p)
 
-prop_boardIsFull :: Board -> Bool
-prop_boardIsFull b = length (tiles b) == 16 `iff` isFull b
+prop_fullBoard :: Board -> Bool
+prop_fullBoard b = length (tiles b) == 16 `iff` full b
 
 
 pure []

@@ -61,8 +61,8 @@ allPieces = [ Piece c s h t | c <- enumerate
 allTiles :: [Tile]
 allTiles = [ Tile h v | h <- indexes, v <- indexes ]
 
-isFull :: Board -> Bool
-isFull b = size b >= 16
+full :: Board -> Bool
+full b = size b >= 16
 
 -- TODO int between 0 and 16 --
 size :: Board -> Int
@@ -87,5 +87,5 @@ place b t p
     Nothing
 
 -- TODO drop is
-isEven :: Board -> Bool
-isEven = even . size
+even :: Board -> Bool
+even = Prelude.even . size
