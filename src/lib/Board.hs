@@ -14,10 +14,10 @@ data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded, Show, Read)
 data Attribute = W | B | R | Q | S | T | F | H
                deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
-data Property = PropColor Color
-              | PropShape Shape
+data Property = PropColor  Color
+              | PropShape  Shape
               | PropHeight Height
-              | PropTop Top
+              | PropTop    Top
 
 data Piece = Piece Color Shape Height Top
            deriving (Eq, Show, Read)
