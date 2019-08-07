@@ -20,6 +20,7 @@ data    PlaceQuarto = PlaceQuarto Board Piece   deriving (Eq, Show, Read)
 data    FinalQuarto = FinalQuarto Board GameEnd deriving (Eq, Show, Read)
 
 data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
+            deriving (Eq, Show, Read)
 
 data Line = Horizontal Index
           | Vertical Index
@@ -31,13 +32,17 @@ data WinningLine = WinningLine Line Attribute
 
 
 turn :: Quarto -> Maybe Player
-turn q = case q of
-  Pass  (PassQuarto  b  ) -> if even b then Just P1 else Just P2
-  Place (PlaceQuarto b _) -> if even b then Just P2 else Just P1
-  Final _                 -> Nothing
+turn (Pass  (PassQuarto  b))   = if even b then Just P1 else Just P2
+turn (Place (PlaceQuarto b _)) = if even b then Just P2 else Just P1
+turn (Final _)                 = Nothing
 
 isTurn :: Quarto -> Player -> Bool
 isTurn q pl = turn q == Just pl
+
+board :: Quarto -> Board
+board (Pass (PassQuarto  b))    = b
+board (Place (PlaceQuarto b _)) = b
+board (Final (FinalQuarto b _)) = b
 
 pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
 pass q @ (PassQuarto b) pl p =
