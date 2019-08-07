@@ -6,8 +6,6 @@ import Data.List (zip4, unfoldr, inits)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (isNothing)
-import Data.Either.Combinators (mapBoth)
-import Data.Either.Utils (fromEither)
 import qualified Prelude as P
 import Prelude
 
@@ -41,6 +39,13 @@ takeTurn _ (Final _)          = Nothing
 takeTurn (pl, _, p) (Pass q)  = Place <$> pass q pl p
 takeTurn (pl, t, _) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
 
+fromEither :: Either a a -> a
+fromEither (Left a)  = a
+fromEither (Right a) = a
+
+mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
+mapBoth f _ (Left x)  = Left (f x)
+mapBoth _ f (Right x) = Right (f x)
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum

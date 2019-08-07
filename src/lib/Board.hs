@@ -3,7 +3,6 @@ module Board where
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
-import Data.List.Extra (enumerate)
 
 
 data Color  = Black | White  deriving (Eq, Enum, Ord, Bounded, Show, Read)
@@ -53,10 +52,10 @@ indexes :: [Index]
 indexes = [minBound..maxBound]
 
 allPieces :: [Piece]
-allPieces = [ Piece c s h t | c <- enumerate
-                            , s <- enumerate
-                            , h <- enumerate
-                            , t <- enumerate ]
+allPieces = [ Piece c s h t | c <- [minBound..maxBound]
+                            , s <- [minBound..maxBound]
+                            , h <- [minBound..maxBound]
+                            , t <- [minBound..maxBound] ]
 
 allTiles :: [Tile]
 allTiles = [ Tile h v | h <- indexes, v <- indexes ]
