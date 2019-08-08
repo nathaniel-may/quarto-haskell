@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, LambdaCase #-}
 
 import Test.QuickCheck
 
@@ -21,8 +21,17 @@ iff :: Bool -> Bool -> Bool
 iff = (==)
 infix 3 `iff`
 
---exists :: a -> (a -> Bool) -> Bool
---exists a f = not (f a)
+-- https://stackoverflow.com/questions/42764847/is-there-a-there-exists-quantifier-in-quickcheck
+exists :: Gen a -> (a -> Bool) -> Property
+exists gen prop = property (exists' 100 gen prop)
+
+exists' :: Int -> Gen a -> (a -> Bool) -> Gen Bool
+exists' 0 _ _ = return False
+exists' n gen prop = do
+  a <- gen
+  if prop a
+    then return True
+    else exists' (n - 1) gen prop
 
 shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
 shrinkBoundedEnum x = takeWhile (/= x) [minBound..maxBound]
@@ -117,6 +126,11 @@ prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `containsPiece` p)
 
 prop_fullBoard :: Board -> Bool
 prop_fullBoard b = length (tiles b) == 16 `iff` full b
+
+prop_meta_FinalQuartoExists :: Property
+prop_meta_FinalQuartoExists = exists arbitrary (\case
+                                                  Final _ -> True
+                                                  _       -> False)
 
 prop_turn :: Quarto -> Bool
 prop_turn q@(Final _)  = isNothing $ turn q
