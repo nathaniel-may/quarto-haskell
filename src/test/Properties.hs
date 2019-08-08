@@ -5,7 +5,7 @@ import Test.QuickCheck
 import Data.List (zip4, unfoldr, inits)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (isNothing)
+import Data.Maybe
 import qualified Prelude as P
 import Prelude
 
@@ -14,12 +14,15 @@ import Quarto
 import qualified Board as B
 import Board hiding (Property)
 
-newtype Turns = Turns [(Player, Tile, Piece)]
+newtype Turns = Turns { turns :: [(Player, Tile, Piece)] }
 
 -- if and only if --
 iff :: Bool -> Bool -> Bool
 iff = (==)
 infix 3 `iff`
+
+--exists :: a -> (a -> Bool) -> Bool
+--exists a f = not (f a)
 
 shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
 shrinkBoundedEnum x = takeWhile (/= x) [minBound..maxBound]
@@ -55,10 +58,11 @@ instance Arbitrary Turns where
   arbitrary = Turns . fmap (\(a,(b,c)) -> (a,b,c)) . zip players <$> placements
   shrink (Turns turns) = Turns <$> inits turns
 
--- TODO --
 instance Arbitrary Quarto where
-  arbitrary = undefined
-  shrink    = undefined
+  arbitrary = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty . turns <$> arbitrary
+  shrink (Final (FinalQuarto b _)) = Pass . PassQuarto <$> shrink b
+  shrink (Pass  (PassQuarto  b))   = Pass . PassQuarto  <$> shrink b
+  shrink (Place (PlaceQuarto b p)) = Place . flip PlaceQuarto p <$> shrink b
 
 instance Arbitrary Board where
   arbitrary        = Board . Map.fromList <$> (sublistOf =<< placements)
@@ -115,9 +119,9 @@ prop_fullBoard :: Board -> Bool
 prop_fullBoard b = length (tiles b) == 16 `iff` full b
 
 prop_turn :: Quarto -> Bool
-prop_turn q @ (Final _)  = isNothing $ turn q
-prop_turn q @ (Pass qq)  = turn q == if B.even (board q) then Just P1 else Just P2
-prop_turn q @ (Place qq) = turn q == if B.even (board q) then Just P2 else Just P1
+prop_turn q@(Final _)  = isNothing $ turn q
+prop_turn q@(Pass qq)  = turn q == if B.even (board q) then Just P1 else Just P2
+prop_turn q@(Place qq) = turn q == if B.even (board q) then Just P2 else Just P1
 
 pure []
 

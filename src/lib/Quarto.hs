@@ -7,6 +7,7 @@ import Data.Functor (($>))
 import Control.Monad (guard)
 import Prelude hiding (lines, even)
 
+import qualified Board as B
 import Board
 
 
@@ -30,6 +31,8 @@ data Line = Horizontal Index
 
 data WinningLine = WinningLine Line Attribute
 
+empty :: Quarto
+empty = Pass $ PassQuarto B.empty
 
 turn :: Quarto -> Maybe Player
 turn (Pass  (PassQuarto  b))   = if even b then Just P1 else Just P2

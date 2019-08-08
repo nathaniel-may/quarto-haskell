@@ -31,6 +31,9 @@ newtype Board = Board { tiles :: Map Tile Piece }
               deriving (Eq, Show, Read)
 
 
+empty :: Board
+empty = Board Map.empty
+
 attr :: Property -> Attribute
 attr p = case p of
   PropColor  White  -> W
