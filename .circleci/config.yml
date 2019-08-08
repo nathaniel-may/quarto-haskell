@@ -13,7 +13,7 @@ jobs:
           command: stack --no-terminal setup
       - run:
           name: Compile
-          command: stack --no-terminal build
+          command: stack --no-terminal build --test --no-run-tests
       - run:
           name: Run tests
           command: stack --no-terminal test
