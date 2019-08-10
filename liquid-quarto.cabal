@@ -41,4 +41,5 @@ test-suite quickcheck
                   , containers ==0.6.*
                   , QuickCheck ==2.12.*
                   , quickcheck-instances ==0.3.*
+  ghc-options:      -Wall
   default-language: Haskell2010
