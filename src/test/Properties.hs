@@ -44,7 +44,7 @@ placements = do
 
 -- infinite list of [P1, P2, P1, P2 ...]
 players :: [Player]
-players = unfoldr (\pl -> if pl == P1 then Just (P2, P2) else Just (P1, P1)) P1
+players = cycle [P1, P2]
 
 takeTurn :: (Player, Tile, Piece) -> Quarto -> Maybe Quarto
 takeTurn _ (Final _)          = Nothing
