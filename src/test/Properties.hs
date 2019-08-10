@@ -147,8 +147,8 @@ prop_meta_FinalQuartoExists = exists arbitrary (\case
 
 prop_turn :: Quarto -> Bool
 prop_turn q@(Final _)  = isNothing $ turn q
-prop_turn q@(Pass qq)  = turn q == if B.even (board q) then Just P1 else Just P2
-prop_turn q@(Place qq) = turn q == if B.even (board q) then Just P2 else Just P1
+prop_turn q@(Pass _)   = turn q == if B.even (board q) then Just P1 else Just P2
+prop_turn q@(Place _)  = turn q == if B.even (board q) then Just P2 else Just P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
 prop_activePieceNotPlaced t p = isNothing $ flip placeQuarto p =<< B.place B.empty t p
