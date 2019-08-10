@@ -14,7 +14,11 @@ import Quarto
 import qualified Board as B
 import Board hiding (Property)
 
-newtype Turns = Turns { turns :: [(Player, Tile, Piece)] }
+data Turn = PassTurn Player Piece | PlaceTurn Player Tile
+          deriving (Eq, Show, Read)
+
+newtype Turns = Turns { turns :: [Turn] }
+              deriving (Eq, Show, Read)
 
 -- if and only if --
 iff :: Bool -> Bool -> Bool
@@ -23,7 +27,7 @@ infix 3 `iff`
 
 -- https://stackoverflow.com/questions/42764847/is-there-a-there-exists-quantifier-in-quickcheck
 exists :: Gen a -> (a -> Bool) -> Property
-exists gen prop = property (exists' 100 gen prop)
+exists gen prop = property (exists' 1000 gen prop)
 
 exists' :: Int -> Gen a -> (a -> Bool) -> Gen Bool
 exists' 0 _ _ = return False
@@ -42,14 +46,20 @@ placements = do
   pieces <- shuffle allPieces
   pure $ zip tiles pieces
 
--- infinite list of [P1, P2, P1, P2 ...]
-players :: [Player]
-players = cycle [P1, P2]
+-- infinite list of [(P1, P2), (P2, P1) ...]
+players :: [(Player, Player)]
+players = cycle [(P1, P2), (P2, P1)]
 
-takeTurn :: (Player, Tile, Piece) -> Quarto -> Maybe Quarto
-takeTurn _ (Final _)          = Nothing
-takeTurn (pl, _, p) (Pass q)  = Place <$> pass q pl p
-takeTurn (pl, t, _) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
+takeTurn :: Turn -> Quarto -> Maybe Quarto
+takeTurn _ (Final _)                = Nothing
+takeTurn (PassTurn pl p) (Pass q)   = Place <$> pass q pl p
+takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
+
+takeTurns :: Turns -> Quarto
+takeTurns ts = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty (turns ts)
+
+takeTurnsWithErrors :: Turns -> Maybe Quarto
+takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Just Q.empty) (turns ts)
 
 fromEither :: Either a a -> a
 fromEither (Left a)  = a
@@ -64,11 +74,13 @@ instance Arbitrary Player where
   shrink    = shrinkBoundedEnum
 
 instance Arbitrary Turns where
-  arbitrary = Turns . fmap (\(a,(b,c)) -> (a,b,c)) . zip players <$> placements
-  shrink (Turns turns) = Turns <$> inits turns
+  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements)
+    where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
+  shrink (Turns [])    = []
+  shrink (Turns turns) = [Turns (init turns)]
 
 instance Arbitrary Quarto where
-  arbitrary = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty . turns <$> arbitrary
+  arbitrary = takeTurns <$> arbitrary
   shrink (Final (FinalQuarto b _)) = Pass . passQuarto <$> shrink b
   shrink (Pass  (PassQuarto  b))   = Pass . passQuarto <$> shrink b
   shrink (Place (PlaceQuarto b p)) =
@@ -146,6 +158,12 @@ prop_p1MustStart :: Player -> Piece -> Bool
 prop_p1MustStart pl p = pl == P2 && rejected ||
                         pl == P1 && not rejected
   where rejected = isNothing (pass (passQuarto B.empty) pl p)
+
+prop_doubleAllTurnsNeverRejected :: Turns -> Bool
+prop_doubleAllTurnsNeverRejected ts = isJust (takeTurnsWithErrors ts)
+
+--prop_doubleTurnsRejected :: Turns -> Bool
+--prop_doubleTurnsRejected ts = isNothing (takeTurnsWithErrors ts)
 
 
 pure []
