@@ -70,7 +70,7 @@ instance Arbitrary Turns where
 instance Arbitrary Quarto where
   arbitrary = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty . turns <$> arbitrary
   shrink (Final (FinalQuarto b _)) = Pass . passQuarto <$> shrink b
-  shrink (Pass  (PassQuarto  b))   = Pass . passQuarto  <$> shrink b
+  shrink (Pass  (PassQuarto  b))   = Pass . passQuarto <$> shrink b
   shrink (Place (PlaceQuarto b p)) =
     mapMaybe (fmap Place . flip placeQuarto p) (shrink b)
       ++ shrink (Pass (passQuarto b))
@@ -141,6 +141,11 @@ prop_turn q@(Place qq) = turn q == if B.even (board q) then Just P2 else Just P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
 prop_activePieceNotPlaced t p = isNothing $ flip placeQuarto p =<< B.place B.empty t p
+
+prop_p1MustStart :: Player -> Piece -> Bool
+prop_p1MustStart pl p = pl == P2 && rejected ||
+                        pl == P1 && not rejected
+  where rejected = isNothing (pass (passQuarto B.empty) pl p)
 
 
 pure []
