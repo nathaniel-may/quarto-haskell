@@ -42,4 +42,6 @@ test-suite quickcheck
                   , QuickCheck ==2.12.*
                   , quickcheck-instances ==0.3.*
   ghc-options:      -Wall
+                    -fno-warn-orphans
+                    -fno-warn-name-shadowing
   default-language: Haskell2010
