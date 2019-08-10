@@ -1,24 +1,79 @@
-module Quarto where
+{-# LANGUAGE PatternSynonyms #-}
 
-import Data.Maybe (Maybe, mapMaybe)
-import Data.List (delete)
-import Data.List.NonEmpty (nonEmpty)
-import Data.Functor (($>))
-import Control.Monad (guard)
+module Quarto (
+    Quarto(..)
+  , Player(..)
+  , GameEnd(..)
+  , Line(..)
+  , WinningLine(..)
+  -- hidden and smart constructors
+  , PassQuarto(PassQuarto)
+  , PlaceQuarto(PlaceQuarto)
+  , FinalQuarto(FinalQuarto)
+  , placeQuarto
+  , finalQuarto
+  -- hidden and smart constructors
+  , empty
+  , turn
+  , isTurn
+  , board
+  , pass
+  , place
+  , lines
+  , lineTiles
+  , isWin
+  , winningLines) where
+
 import Prelude hiding (lines, even)
 
+import Data.Maybe
+import Data.List (delete)
+import Data.List.NonEmpty (nonEmpty)
+import Data.Functor
+import Control.Applicative hiding (empty)
+import Control.Monad
+
 import qualified Board as B
-import Board
+import Board hiding (empty, place)
 
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
 data GameEnd = Winner Player | Tie deriving (Eq, Show, Read)
 
--- TODO smart constructors --
-newtype PassQuarto  = PassQuarto  Board         deriving (Eq, Show, Read)
-data    PlaceQuarto = PlaceQuarto Board Piece   deriving (Eq, Show, Read)
-data    FinalQuarto = FinalQuarto Board GameEnd deriving (Eq, Show, Read)
+newtype PassQuarto  = MkPassQuarto  Board         deriving (Eq, Show, Read)
+data    PlaceQuarto = MkPlaceQuarto Board Piece   deriving (Eq, Show, Read)
+data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
+
+-- not smart. used for consistency across Quarto types
+passQuarto :: Board -> PassQuarto
+passQuarto = MkPassQuarto
+
+placeQuarto :: Board -> Piece -> Maybe PlaceQuarto
+placeQuarto b p = guard (not (b `containsPiece` p)) $> MkPlaceQuarto b p
+
+finalQuarto :: Board -> Maybe FinalQuarto
+finalQuarto b
+  | not win && full b
+    = Just (MkFinalQuarto b Tie)
+  | win
+    = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
+  | otherwise
+    = Nothing
+  where win = not . null $ winningLines b
+
+pattern PassQuarto :: Board -> PassQuarto
+pattern PassQuarto  b   <- MkPassQuarto  b
+
+pattern PlaceQuarto :: Board -> Piece -> PlaceQuarto
+pattern PlaceQuarto b p <- MkPlaceQuarto b p
+
+pattern FinalQuarto :: Board -> GameEnd -> FinalQuarto
+pattern FinalQuarto b e <- MkFinalQuarto b e
+
+{-# COMPLETE PassQuarto #-}
+{-# COMPLETE PlaceQuarto #-}
+{-# COMPLETE FinalQuarto #-}
 
 data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
             deriving (Eq, Show, Read)
@@ -32,7 +87,7 @@ data Line = Horizontal Index
 data WinningLine = WinningLine Line Attribute
 
 empty :: Quarto
-empty = Pass $ PassQuarto B.empty
+empty = Pass $ passQuarto B.empty
 
 turn :: Quarto -> Maybe Player
 turn (Pass  (PassQuarto  b))   = if even b then Just P1 else Just P2
@@ -48,19 +103,14 @@ board (Place (PlaceQuarto b _)) = b
 board (Final (FinalQuarto b _)) = b
 
 pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
-pass q @ (PassQuarto b) pl p =
-  guard (isTurn (Pass q) pl && not (containsPiece b p)) $> PlaceQuarto b p
+pass q@(PassQuarto b) pl p =
+  guard (isTurn (Pass q) pl && not (containsPiece b p)) *> placeQuarto b p
 
--- TODO refactor if else then --
 place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
-place q @ (PlaceQuarto b p) pl t = (\newBoard ->
-    if null (winningLines newBoard) && not (full newBoard)
-    then Left  $ PassQuarto  newBoard
-    else if full newBoard
-      then Right $ FinalQuarto newBoard Tie
-      else Right $ FinalQuarto newBoard (Winner pl))
-  <$> (guard (isTurn (Place q) pl)
-  *> Board.place b t p)
+place q@(PlaceQuarto b p) pl t =
+  guard (isTurn (Place q) pl) *>
+  (Left . passQuarto <$> newBoard) <|> (fmap Right . finalQuarto =<< newBoard)
+  where newBoard = B.place b t p
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
