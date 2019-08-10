@@ -1,18 +1,17 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 module Quarto (
+  -- * constructors
     Quarto(..)
   , Player(..)
   , GameEnd(..)
   , Line(..)
   , WinningLine(..)
-  -- hidden and smart constructors
-  , PassQuarto(PassQuarto)
-  , PlaceQuarto(PlaceQuarto)
-  , FinalQuarto(FinalQuarto)
-  , placeQuarto
-  , finalQuarto
-  -- hidden and smart constructors
+  -- * smart constructors
+  , PassQuarto(PassQuarto),   passQuarto
+  , PlaceQuarto(PlaceQuarto), placeQuarto
+  , FinalQuarto(FinalQuarto), finalQuarto
+  -- * functions
   , empty
   , turn
   , isTurn
