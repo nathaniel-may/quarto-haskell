@@ -158,8 +158,8 @@ prop_p1MustStart pl p = pl == P2 && rejected ||
                         pl == P1 && not rejected
   where rejected = isNothing (pass (passQuarto B.empty) pl p)
 
-prop_doubleAllTurnsNeverRejected :: Turns -> Bool
-prop_doubleAllTurnsNeverRejected ts = isJust (takeTurnsWithErrors ts)
+prop_meta_turnsNeverRejected :: Turns -> Bool
+prop_meta_turnsNeverRejected ts = isJust (takeTurnsWithErrors ts)
 
 --prop_doubleTurnsRejected :: Turns -> Bool
 --prop_doubleTurnsRejected ts = isNothing (takeTurnsWithErrors ts)
