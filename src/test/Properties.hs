@@ -71,7 +71,9 @@ instance Arbitrary Quarto where
   arbitrary = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty . turns <$> arbitrary
   shrink (Final (FinalQuarto b _)) = Pass . passQuarto <$> shrink b
   shrink (Pass  (PassQuarto  b))   = Pass . passQuarto  <$> shrink b
-  shrink (Place (PlaceQuarto b p)) = mapMaybe (fmap Place . flip placeQuarto p) (shrink b)
+  shrink (Place (PlaceQuarto b p)) =
+    mapMaybe (fmap Place . flip placeQuarto p) (shrink b)
+      ++ shrink (Pass (passQuarto b))
 
 instance Arbitrary Board where
   arbitrary        = Board . Map.fromList <$> (sublistOf =<< placements)
