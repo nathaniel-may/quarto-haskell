@@ -2,11 +2,10 @@
 
 import Test.QuickCheck
 
-import Data.List (zip4, unfoldr, inits)
-import Data.Map (Map)
+import Data.List
+import Data.Map ()
 import qualified Data.Map as Map
 import Data.Maybe
-import qualified Prelude as P
 import Prelude
 
 import qualified Quarto as Q
@@ -42,18 +41,18 @@ shrinkBoundedEnum x = takeWhile (/= x) [minBound..maxBound]
 
 placements :: Gen [(Tile, Piece)]
 placements = do
-  tiles  <- shuffle allTiles
-  pieces <- shuffle allPieces
-  pure $ zip tiles pieces
+  sTiles  <- shuffle allTiles
+  sPieces <- shuffle allPieces
+  pure $ zip sTiles sPieces
 
 -- infinite list of [(P1, P2), (P2, P1) ...]
 players :: [(Player, Player)]
 players = cycle [(P1, P2), (P2, P1)]
 
 takeTurn :: Turn -> Quarto -> Maybe Quarto
-takeTurn _ (Final _)                = Nothing
-takeTurn (PassTurn pl p) (Pass q)   = Place <$> pass q pl p
+takeTurn (PassTurn  pl p) (Pass q)  = Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
+takeTurn _ _                        = Nothing
 
 takeTurns :: Turns -> Quarto
 takeTurns ts = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty (turns ts)
