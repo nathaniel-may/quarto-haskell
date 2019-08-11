@@ -21,20 +21,21 @@ module Quarto (
   , lines
   , lineTiles
   , isWin
-  , winningLines) where
+  , winningLines
+  -- * functions that should be in a library
+  , fromEither
+  ) where
 
 import Prelude hiding (lines, even)
 
 import Data.Maybe
 import Data.List (delete)
 import Data.List.NonEmpty (nonEmpty)
-import Data.Functor
 import Control.Applicative hiding (empty)
-import Control.Monad
 
 import qualified Board as B
 import Board hiding (empty, place)
-
+import Errors
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
@@ -48,17 +49,21 @@ data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
 passQuarto :: Board -> PassQuarto
 passQuarto = MkPassQuarto
 
-placeQuarto :: Board -> Piece -> Maybe PlaceQuarto
-placeQuarto b p = guard (not (b `containsPiece` p)) $> MkPlaceQuarto b p
+placeQuarto :: Board -> Piece -> Either Err PlaceQuarto
+placeQuarto b p
+  | b `containsPiece` p
+    = Left (err "cannot create a PlaceQuarto with a piece that is already on the board")
+  | otherwise
+    = Right (MkPlaceQuarto b p)
 
-finalQuarto :: Board -> Maybe FinalQuarto
+finalQuarto :: Board -> Either Err FinalQuarto
 finalQuarto b
   | not win && full b
-    = Just (MkFinalQuarto b Tie)
+    = Right (MkFinalQuarto b Tie)
   | win
     = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
   | otherwise
-    = Nothing
+    = Left (err "cannot create a FinalQuarto with a board that isn't a win or a tie")
   where win = not . null $ winningLines b
 
 pattern PassQuarto :: Board -> PassQuarto
@@ -88,27 +93,44 @@ data WinningLine = WinningLine Line Attribute
 empty :: Quarto
 empty = Pass $ passQuarto B.empty
 
-turn :: Quarto -> Maybe Player
-turn (Pass  (PassQuarto  b))   = if even b then Just P1 else Just P2
-turn (Place (PlaceQuarto b _)) = if even b then Just P2 else Just P1
-turn (Final _)                 = Nothing
+turn :: Quarto -> Either Err Player
+turn (Pass  (PassQuarto  b))   = if even b then Right P1 else Right P2
+turn (Place (PlaceQuarto b _)) = if even b then Right P2 else Right P1
+turn (Final _)                 = Left (err "game is over. it is no one's turn.")
 
 isTurn :: Quarto -> Player -> Bool
-isTurn q pl = turn q == Just pl
+isTurn q pl = turn q == Right pl
 
 board :: Quarto -> Board
 board (Pass (PassQuarto  b))    = b
 board (Place (PlaceQuarto b _)) = b
 board (Final (FinalQuarto b _)) = b
 
-pass :: PassQuarto -> Player -> Piece -> Maybe PlaceQuarto
-pass q@(PassQuarto b) pl p =
-  guard (isTurn (Pass q) pl && not (containsPiece b p)) *> placeQuarto b p
+pass :: PassQuarto -> Player -> Piece -> Either Err PlaceQuarto
+pass q@(PassQuarto b) pl p
+  | not $ isTurn (Pass q) pl
+    = Left (err "cannot pass when it's not your turn.")
+  | b `containsPiece` p
+    = Left (err "cannot pass a piece that is already on the board.")
+  | otherwise
+    = placeQuarto b p
 
-place :: PlaceQuarto -> Player -> Tile -> Maybe (Either PassQuarto FinalQuarto)
-place q@(PlaceQuarto b p) pl t =
-  guard (isTurn (Place q) pl) *>
-  (Left . passQuarto <$> newBoard) <|> (fmap Right . finalQuarto =<< newBoard)
+rightToMaybe :: Either a b -> Maybe b
+rightToMaybe = either (const Nothing) Just
+
+fromEither :: Either a a -> a
+fromEither (Left a)  = a
+fromEither (Right a) = a
+
+place :: PlaceQuarto -> Player -> Tile -> Either Err (Either PassQuarto FinalQuarto)
+place q@(PlaceQuarto b p) pl t
+  | not $ isTurn (Place q) pl
+    = Left (err "cannot place when it's not your turn.")
+  | b `contains` t
+    = Left (err "cannot place on a tile that is already occupied on the board")
+  | otherwise
+    = maybe (Left (err "")) Right $ rightToMaybe (Left . passQuarto <$> newBoard)
+        <|> rightToMaybe (fmap Right . finalQuarto =<< newBoard)
   where newBoard = B.place b t p
 
 lines :: [Line]

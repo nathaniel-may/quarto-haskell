@@ -61,10 +61,6 @@ takeTurns ts = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty (turns ts)
 takeTurnsWithErrors :: Turns -> Maybe Quarto
 takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Just Q.empty) (turns ts)
 
-fromEither :: Either a a -> a
-fromEither (Left a)  = a
-fromEither (Right a) = a
-
 mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
 mapBoth f _ (Left x)  = Left (f x)
 mapBoth _ f (Right x) = Right (f x)

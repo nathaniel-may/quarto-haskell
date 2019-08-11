@@ -4,6 +4,8 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
+import Errors
+
 
 data Color  = Black | White  deriving (Eq, Enum, Ord, Bounded, Show, Read)
 data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Show, Read)
@@ -81,12 +83,14 @@ get :: Board -> Tile -> Maybe Piece
 get b t = Map.lookup t $ tiles b
 
 -- TODO how many restrictions can I place here with LH? --
-place :: Board -> Tile -> Piece -> Maybe Board
+place :: Board -> Tile -> Piece -> Either Err Board
 place b t p
-  | not (contains b t) && not (b `containsPiece` p) =
-    Just . Board . Map.insert t p $ tiles b
-  | otherwise =
-    Nothing
+  | b `contains` t
+    = Left (err "Board: cannot place a piece on an already occupied tile")
+  | b `containsPiece` p
+    = Left (err "Board: cannot place a piece that is already on the board")
+  | otherwise
+    = Right . Board . Map.insert t p $ tiles b
 
 -- TODO drop is
 even :: Board -> Bool
