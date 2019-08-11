@@ -16,11 +16,12 @@ maintainer:          nathanieldmay@gmail.com
 category:            Game
 
 library
-  exposed-modules:     Quarto, Board
+  exposed-modules:     Quarto, Board, Errors
   -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*
                      , containers ==0.6.*
+                     , text ==1.2.*
   ghc-options:         -Wall
   hs-source-dirs:      src/lib
   default-language:    Haskell2010
@@ -39,6 +40,7 @@ test-suite quickcheck
   build-depends:    liquid-quarto
                   , base ==4.12.*
                   , containers ==0.6.*
+                  , text ==1.2.*
                   , QuickCheck ==2.12.*
                   , quickcheck-instances ==0.3.*
   ghc-options:      -Wall
