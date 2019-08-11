@@ -50,6 +50,7 @@ players :: [(Player, Player)]
 players = cycle [(P1, P2), (P2, P1)]
 
 takeTurn :: Turn -> Quarto -> Maybe Quarto
+takeTurn _              q@(Final _) = Just q
 takeTurn (PassTurn  pl p) (Pass q)  = Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
 takeTurn _ _                        = Nothing
@@ -160,9 +161,6 @@ prop_p1MustStart pl p = pl == P2 && rejected ||
 
 prop_meta_turnsNeverRejected :: Turns -> Bool
 prop_meta_turnsNeverRejected ts = isJust (takeTurnsWithErrors ts)
-
---prop_doubleTurnsRejected :: Turns -> Bool
---prop_doubleTurnsRejected ts = isNothing (takeTurnsWithErrors ts)
 
 
 pure []
