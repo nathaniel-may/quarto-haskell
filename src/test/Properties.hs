@@ -6,12 +6,14 @@ import Data.List
 import Data.Map ()
 import qualified Data.Map as Map
 import Data.Maybe
+import Data.Either
 import Prelude
 
 import qualified Quarto as Q
 import Quarto
 import qualified Board as B
 import Board hiding (Property)
+import Errors
 
 data Turn = PassTurn Player Piece | PlaceTurn Player Tile
           deriving (Eq, Show, Read)
@@ -49,21 +51,17 @@ placements = do
 players :: [(Player, Player)]
 players = cycle [(P1, P2), (P2, P1)]
 
-takeTurn :: Turn -> Quarto -> Maybe Quarto
-takeTurn _              q@(Final _) = Just q
+takeTurn :: Turn -> Quarto -> Either QuartoException Quarto
+takeTurn _              q@(Final _) = Right q
 takeTurn (PassTurn  pl p) (Pass q)  = Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
-takeTurn _ _                        = Nothing
+takeTurn _ _                        = Left mismatchedTurn
 
 takeTurns :: Turns -> Quarto
-takeTurns ts = foldr (\t q -> fromMaybe q $ takeTurn t q) Q.empty (turns ts)
+takeTurns ts = foldr (\t q -> fromRight q $ takeTurn t q) Q.empty (turns ts)
 
-takeTurnsWithErrors :: Turns -> Maybe Quarto
-takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Just Q.empty) (turns ts)
-
-mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
-mapBoth f _ (Left x)  = Left (f x)
-mapBoth _ f (Right x) = Right (f x)
+takeTurnsWithErrors :: Turns -> Either QuartoException Quarto
+takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Right Q.empty) (turns ts)
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum
@@ -80,7 +78,7 @@ instance Arbitrary Quarto where
   shrink (Final (FinalQuarto b _)) = Pass . passQuarto <$> shrink b
   shrink (Pass  (PassQuarto  b))   = Pass . passQuarto <$> shrink b
   shrink (Place (PlaceQuarto b p)) =
-    mapMaybe (fmap Place . flip placeQuarto p) (shrink b)
+    mapEither (fmap Place . flip placeQuarto p) (shrink b)
       ++ shrink (Pass (passQuarto b))
 
 instance Arbitrary Board where
@@ -123,9 +121,9 @@ instance Arbitrary Piece where
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
   | b `contains` t || b `containsPiece` p
-    = isNothing $ B.place b t p
+    = isLeft $ B.place b t p
   | otherwise
-    = B.place b t p == Just (Board . Map.insert t p $ tiles b)
+    = B.place b t p == Right (Board . Map.insert t p $ tiles b)
 
 prop_boardContains :: Board -> Tile -> Bool
 prop_boardContains b t =
@@ -143,20 +141,20 @@ prop_meta_FinalQuartoExists = exists arbitrary (\case
                                                   _       -> False)
 
 prop_turn :: Quarto -> Bool
-prop_turn q@(Final _)  = isNothing $ turn q
-prop_turn q@(Pass _)   = turn q == if B.even (board q) then Just P1 else Just P2
-prop_turn q@(Place _)  = turn q == if B.even (board q) then Just P2 else Just P1
+prop_turn q@(Final _)  = isLeft $ turn q
+prop_turn q@(Pass _)   = turn q == if B.even (board q) then Right P1 else Right P2
+prop_turn q@(Place _)  = turn q == if B.even (board q) then Right P2 else Right P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
-prop_activePieceNotPlaced t p = isNothing $ flip placeQuarto p =<< B.place B.empty t p
+prop_activePieceNotPlaced t p = isLeft $ flip placeQuarto p =<< B.place B.empty t p
 
 prop_p1MustStart :: Player -> Piece -> Bool
 prop_p1MustStart pl p = pl == P2 && rejected ||
                         pl == P1 && not rejected
-  where rejected = isNothing (pass (passQuarto B.empty) pl p)
+  where rejected = isLeft (pass (passQuarto B.empty) pl p)
 
 prop_meta_turnsNeverRejected :: Turns -> Bool
-prop_meta_turnsNeverRejected ts = isJust (takeTurnsWithErrors ts)
+prop_meta_turnsNeverRejected ts = isRight (takeTurnsWithErrors ts)
 
 
 pure []

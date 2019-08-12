@@ -83,12 +83,12 @@ get :: Board -> Tile -> Maybe Piece
 get b t = Map.lookup t $ tiles b
 
 -- TODO how many restrictions can I place here with LH? --
-place :: Board -> Tile -> Piece -> Either Err Board
+place :: Board -> Tile -> Piece -> Either QuartoException Board
 place b t p
   | b `contains` t
-    = Left (err "Board: cannot place a piece on an already occupied tile")
+    = Left tileOccupied
   | b `containsPiece` p
-    = Left (err "Board: cannot place a piece that is already on the board")
+    = Left pieceAlreadyPlaced
   | otherwise
     = Right . Board . Map.insert t p $ tiles b
 
