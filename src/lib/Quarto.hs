@@ -57,6 +57,7 @@ data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
 passQuarto :: Board -> PassQuarto
 passQuarto = MkPassQuarto
 
+
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
   | b `containsPiece` p

@@ -51,16 +51,16 @@ placements = do
 players :: [(Player, Player)]
 players = cycle [(P1, P2), (P2, P1)]
 
-takeTurn :: Turn -> Quarto -> Either QuartoException Quarto
+takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q
-takeTurn (PassTurn  pl p) (Pass q)  = Place <$> pass q pl p
-takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
-takeTurn _ _                        = Left MismatchedTurn
+takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
+takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
+takeTurn _ _                        = Left (TestE MismatchedTurn)
 
 takeTurns :: Turns -> Quarto
 takeTurns ts = foldr (\t q -> fromRight q $ takeTurn t q) Q.empty (turns ts)
 
-takeTurnsWithErrors :: Turns -> Either QuartoException Quarto
+takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
 takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Right Q.empty) (turns ts)
   -- foldrM
 

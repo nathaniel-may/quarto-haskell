@@ -2,11 +2,10 @@ module Errors where
 
 import Control.Exception
 
--- TODO make these work together in the main code
-data QuartoException = GameE GameException | BoardE BoardException | TestE TestException
-                     deriving (Eq, Show, Read)
 
-data GameException = PieceAlreadyOnBoard
+data QuartoException = TileOccupied
+                   | PieceAlreadyPlaced
+                   | PieceAlreadyOnBoard
                    | FinalQuartoMustBeCompleted
                    | FinishedGameHasNoTurn
                    | CannotPassOffTurn
@@ -15,17 +14,15 @@ data GameException = PieceAlreadyOnBoard
                    | CannotPlaceOnOccupiedTile
                    deriving (Eq, Show, Read)
 
-data BoardException = TileOccupied | PieceAlreadyPlaced
-                    deriving (Eq, Show, Read)
+-- TODO make private --
+data QuartoTestException = QuartoE QuartoException | TestE TestException
 
 data TestException = MismatchedTurn
                    deriving (Eq, Show, Read)
 
-instance Exception BoardException where
-  displayException TileOccupied       = "cannot place a piece on an already occupied tile"
-  displayException PieceAlreadyPlaced = "cannot place a piece that is already on the board"
-
-instance Exception GameException where
+instance Exception QuartoException where
+  displayException TileOccupied               = "cannot place a piece on an already occupied tile"
+  displayException PieceAlreadyPlaced         = "cannot place a piece that is already on the board"
   displayException PieceAlreadyOnBoard        = "piece is already on the board"
   displayException FinalQuartoMustBeCompleted = "cannot create a FinalQuarto with a board that isn't a win or a tie"
   displayException FinishedGameHasNoTurn      = "game is over. it is no one's turn."
