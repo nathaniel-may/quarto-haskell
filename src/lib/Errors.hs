@@ -2,7 +2,6 @@ module Errors where
 
 import Control.Exception
 
-
 data QuartoException = TileOccupied
                    | PieceAlreadyPlaced
                    | PieceAlreadyOnBoard
@@ -16,6 +15,7 @@ data QuartoException = TileOccupied
 
 -- TODO make private --
 data QuartoTestException = QuartoE QuartoException | TestE TestException
+                         deriving (Eq, Show, Read)
 
 data TestException = MismatchedTurn
                    deriving (Eq, Show, Read)
