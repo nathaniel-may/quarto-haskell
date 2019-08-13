@@ -165,6 +165,13 @@ prop_p1MustStart pl p = pl == P2 && rejected ||
 prop_meta_turnsNeverRejected :: Turns -> Bool
 prop_meta_turnsNeverRejected ts = isRight (takeTurnsWithErrors ts)
 
+prop_finalGamesAlwaysHaveAtLeast4Pieces :: Turns -> Bool
+prop_finalGamesAlwaysHaveAtLeast4Pieces ts =
+  case takeTurns ts of
+    Final (FinalQuarto b _) -> size b >= 4
+    _ -> True
+
+
 
 pure []
 
