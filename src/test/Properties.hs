@@ -3,7 +3,6 @@
 import Test.QuickCheck
 
 import Prelude
-import Data.List
 import Data.Map ()
 import qualified Data.Map as Map
 import Data.Either
@@ -25,7 +24,7 @@ newtype Turns = Turns { turns :: [Turn] }
 data QuartoTestException = QuartoE QuartoException | TestE TestException
                          deriving (Eq, Show, Read)
 
-data TestException = MismatchedTurn | MismatchedTurnA | MismatchedTurnB Quarto Player Tile
+data TestException = MismatchedTurn
                    deriving (Eq, Show, Read)
 
 instance Exception TestException where
@@ -65,9 +64,7 @@ takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q
 takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
--- takeTurn _ _                        = Left (TestE MismatchedTurn)
-takeTurn (PassTurn _ _) (Place _)   = Left (TestE MismatchedTurnA)
-takeTurn (PlaceTurn pl t) (Pass q)  = Left (TestE (MismatchedTurnB (Pass q) pl t))
+takeTurn _ _                        = Left (TestE MismatchedTurn)
 
 takeTurns :: Turns -> Quarto
 takeTurns ts = foldl (\q t -> fromRight q $ takeTurn t q) Q.empty (turns ts)
