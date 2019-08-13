@@ -6,6 +6,7 @@ import Data.List
 import Data.Map ()
 import qualified Data.Map as Map
 import Data.Either
+import Data.Foldable
 import Prelude
 
 import qualified Quarto as Q
@@ -60,8 +61,7 @@ takeTurns :: Turns -> Quarto
 takeTurns ts = foldr (\t q -> fromRight q $ takeTurn t q) Q.empty (turns ts)
 
 takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
-takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Right Q.empty) (turns ts)
-  -- foldrM
+takeTurnsWithErrors ts = foldrM takeTurn Q.empty (turns ts)
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum
