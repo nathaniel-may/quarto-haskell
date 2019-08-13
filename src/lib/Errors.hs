@@ -3,22 +3,15 @@ module Errors where
 import Control.Exception
 
 data QuartoException = TileOccupied
-                   | PieceAlreadyPlaced
-                   | PieceAlreadyOnBoard
-                   | FinalQuartoMustBeCompleted
-                   | FinishedGameHasNoTurn
-                   | CannotPassOffTurn
-                   | CannotPassPlacedPiece
-                   | CannotPlaceOffTurn
-                   | CannotPlaceOnOccupiedTile
-                   deriving (Eq, Show, Read)
-
--- TODO make private --
-data QuartoTestException = QuartoE QuartoException | TestE TestException
-                         deriving (Eq, Show, Read)
-
-data TestException = MismatchedTurn
-                   deriving (Eq, Show, Read)
+                     | PieceAlreadyPlaced
+                     | PieceAlreadyOnBoard
+                     | FinalQuartoMustBeCompleted
+                     | FinishedGameHasNoTurn
+                     | CannotPassOffTurn
+                     | CannotPassPlacedPiece
+                     | CannotPlaceOffTurn
+                     | CannotPlaceOnOccupiedTile
+                     deriving (Eq, Show, Read)
 
 instance Exception QuartoException where
   displayException TileOccupied               = "cannot place a piece on an already occupied tile"
@@ -31,5 +24,3 @@ instance Exception QuartoException where
   displayException CannotPlaceOffTurn         = "cannot place when it's not your turn."
   displayException CannotPlaceOnOccupiedTile  = "cannot place on a tile that is already occupied on the board"
 
-instance Exception TestException where
-  displayException MismatchedTurn = "attempted mismatched turn"

@@ -2,12 +2,13 @@
 
 import Test.QuickCheck
 
+import Prelude
 import Data.List
 import Data.Map ()
 import qualified Data.Map as Map
 import Data.Either
 import Data.Foldable
-import Prelude
+import Control.Exception
 
 import qualified Quarto as Q
 import Quarto
@@ -20,6 +21,15 @@ data Turn = PassTurn Player Piece | PlaceTurn Player Tile
 
 newtype Turns = Turns { turns :: [Turn] }
               deriving (Eq, Show, Read)
+
+data QuartoTestException = QuartoE QuartoException | TestE TestException
+                         deriving (Eq, Show, Read)
+
+data TestException = MismatchedTurn | MismatchedTurnA | MismatchedTurnB Quarto Player Tile
+                   deriving (Eq, Show, Read)
+
+instance Exception TestException where
+  displayException MismatchedTurn  = "attempted mismatched turn"
 
 -- if and only if --
 iff :: Bool -> Bool -> Bool
@@ -55,13 +65,15 @@ takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q
 takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
-takeTurn _ _                        = Left (TestE MismatchedTurn)
+-- takeTurn _ _                        = Left (TestE MismatchedTurn)
+takeTurn (PassTurn _ _) (Place _)   = Left (TestE MismatchedTurnA)
+takeTurn (PlaceTurn pl t) (Pass q)  = Left (TestE (MismatchedTurnB (Pass q) pl t))
 
 takeTurns :: Turns -> Quarto
-takeTurns ts = foldr (\t q -> fromRight q $ takeTurn t q) Q.empty (turns ts)
+takeTurns ts = foldl (\q t -> fromRight q $ takeTurn t q) Q.empty (turns ts)
 
 takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
-takeTurnsWithErrors ts = foldrM takeTurn Q.empty (turns ts)
+takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum
