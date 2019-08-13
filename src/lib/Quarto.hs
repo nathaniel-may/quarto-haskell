@@ -36,7 +36,9 @@ import Data.Maybe
 import Data.List (delete)
 import Data.List.NonEmpty (nonEmpty)
 import Data.Either
+import Data.Functor
 import Control.Applicative hiding (empty)
+import Data.Bifunctor
 
 import qualified Board as B
 import Board hiding (empty, place)
@@ -58,7 +60,7 @@ passQuarto = MkPassQuarto
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
   | b `containsPiece` p
-    = Left pieceAlreadyOnBoard
+    = Left PieceAlreadyOnBoard
   | otherwise
     = Right (MkPlaceQuarto b p)
 
@@ -69,7 +71,7 @@ finalQuarto b
   | win
     = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
   | otherwise
-    = Left finalQuartoMustBeCompleted
+    = Left FinalQuartoMustBeCompleted
   where win = not . null $ winningLines b
 
 pattern PassQuarto :: Board -> PassQuarto
@@ -103,15 +105,22 @@ fromEither (Left a)  = a
 fromEither (Right a) = a
 
 mapEither :: (a -> Either c b) -> [a] -> [b]
-mapEither f as = fromEither . mapBoth (const []) (: []) =<< (f <$> as)
+mapEither f xs =
+  rights $ map f xs
+  -- snd . partitionEithers $ map f xs
+  -- [x | Right x <- f <$> xs]
+  -- fromEither . mapBoth (const []) (: []) =<< (f <$> xs)
 
+-- bimap
 mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
 mapBoth f _ (Left x)  = Left (f x)
 mapBoth _ f (Right x) = Right (f x)
 
+-- first (Bifunctor, in Data.Bifunctor)
 mapLeft :: (a -> c) -> Either a b -> Either c b
 mapLeft f = mapBoth f id
 
+-- Data.List.intersect
 same :: Eq a => [a] -> [a] -> [a]
 same [] _ = []
 same _ [] = []
@@ -127,7 +136,7 @@ empty = Pass $ passQuarto B.empty
 turn :: Quarto -> Either QuartoException Player
 turn (Pass  (PassQuarto  b))   = if even b then Right P1 else Right P2
 turn (Place (PlaceQuarto b _)) = if even b then Right P2 else Right P1
-turn (Final _)                 = Left finishedGameHasNoTurn
+turn (Final _)                 = Left FinishedGameHasNoTurn
 
 isTurn :: Quarto -> Player -> Bool
 isTurn q pl = turn q == Right pl
@@ -140,9 +149,9 @@ board (Final (FinalQuarto b _)) = b
 pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p
   | not $ isTurn (Pass q) pl
-    = Left cannotPassOffTurn
+    = Left CannotPassOffTurn
   | b `containsPiece` p
-    = Left cannotPassPlacedPiece
+    = Left CannotPassPlacedPiece
   | otherwise
     = placeQuarto b p
 
@@ -152,12 +161,12 @@ rightToMaybe = either (const Nothing) Just
 place :: PlaceQuarto -> Player -> Tile -> Either QuartoException (Either PassQuarto FinalQuarto)
 place q@(PlaceQuarto b p) pl t
   | not $ isTurn (Place q) pl
-    = Left cannotPlaceOffTurn
+    = Left CannotPlaceOffTurn
   | b `contains` t
-    = Left cannotPlaceOnOccupiedTile
+    = Left CannotPlaceOnOccupiedTile
   | otherwise
-    = (\nb -> fromRight (Left (passQuarto nb)) (Right <$> finalQuarto nb))
-      <$> B.place b t p
+    = B.place b t p <&> \nb ->
+        first (const $ passQuarto nb) (finalQuarto nb)
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]

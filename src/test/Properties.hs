@@ -55,20 +55,21 @@ takeTurn :: Turn -> Quarto -> Either QuartoException Quarto
 takeTurn _              q@(Final _) = Right q
 takeTurn (PassTurn  pl p) (Pass q)  = Place <$> pass q pl p
 takeTurn (PlaceTurn pl t) (Place q) = fromEither . mapBoth Pass Final <$> Q.place q pl t
-takeTurn _ _                        = Left mismatchedTurn
+takeTurn _ _                        = Left MismatchedTurn
 
 takeTurns :: Turns -> Quarto
 takeTurns ts = foldr (\t q -> fromRight q $ takeTurn t q) Q.empty (turns ts)
 
 takeTurnsWithErrors :: Turns -> Either QuartoException Quarto
 takeTurnsWithErrors ts = foldr (\t q -> takeTurn t =<< q) (Right Q.empty) (turns ts)
+  -- foldrM
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum
   shrink    = shrinkBoundedEnum
 
 instance Arbitrary Turns where
-  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements)
+  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements) -- TODO this is where my error is?
     where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
   shrink (Turns [])    = []
   shrink (Turns turns) = [Turns (init turns)]

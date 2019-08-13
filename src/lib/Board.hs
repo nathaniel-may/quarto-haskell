@@ -86,9 +86,9 @@ get b t = Map.lookup t $ tiles b
 place :: Board -> Tile -> Piece -> Either QuartoException Board
 place b t p
   | b `contains` t
-    = Left tileOccupied
+    = Left TileOccupied
   | b `containsPiece` p
-    = Left pieceAlreadyPlaced
+    = Left PieceAlreadyPlaced
   | otherwise
     = Right . Board . Map.insert t p $ tiles b
 

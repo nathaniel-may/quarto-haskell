@@ -1,61 +1,38 @@
-{-# LANGUAGE DeriveAnyClass #-}
-
 module Errors where
 
-import qualified Data.Text as T
-import Data.Text (Text)
 import Control.Exception
 
+-- TODO make these work together in the main code
+data QuartoException = GameE GameException | BoardE BoardException | TestE TestException
+                     deriving (Eq, Show, Read)
 
-data QuartoException = GameException Text | BoardException Text | TestException Text
-                     deriving (Eq, Show, Read, Exception)
+data GameException = PieceAlreadyOnBoard
+                   | FinalQuartoMustBeCompleted
+                   | FinishedGameHasNoTurn
+                   | CannotPassOffTurn
+                   | CannotPassPlacedPiece
+                   | CannotPlaceOffTurn
+                   | CannotPlaceOnOccupiedTile
+                   deriving (Eq, Show, Read)
 
--- Board Exceptions --
+data BoardException = TileOccupied | PieceAlreadyPlaced
+                    deriving (Eq, Show, Read)
 
-tileOccupied :: QuartoException
-tileOccupied = BoardException $ T.pack
-  "cannot place a piece on an already occupied tile"
+data TestException = MismatchedTurn
+                   deriving (Eq, Show, Read)
 
-pieceAlreadyPlaced :: QuartoException
-pieceAlreadyPlaced = BoardException $ T.pack
-  "cannot place a piece that is already on the board"
+instance Exception BoardException where
+  displayException TileOccupied       = "cannot place a piece on an already occupied tile"
+  displayException PieceAlreadyPlaced = "cannot place a piece that is already on the board"
 
--- Game Exceptions --
+instance Exception GameException where
+  displayException PieceAlreadyOnBoard        = "piece is already on the board"
+  displayException FinalQuartoMustBeCompleted = "cannot create a FinalQuarto with a board that isn't a win or a tie"
+  displayException FinishedGameHasNoTurn      = "game is over. it is no one's turn."
+  displayException CannotPassOffTurn          = "cannot pass when it's not your turn."
+  displayException CannotPassPlacedPiece      = "cannot pass a piece that is already on the board."
+  displayException CannotPlaceOffTurn         = "cannot place when it's not your turn."
+  displayException CannotPlaceOnOccupiedTile  = "cannot place on a tile that is already occupied on the board"
 
-pieceAlreadyOnBoard :: QuartoException
-pieceAlreadyOnBoard = GameException $ T.pack
-  "piece is already on the board"
-
-finalQuartoMustBeCompleted :: QuartoException
-finalQuartoMustBeCompleted = GameException $ T.pack
-  "cannot create a FinalQuarto with a board that isn't a win or a tie"
-
-finishedGameHasNoTurn :: QuartoException
-finishedGameHasNoTurn = GameException $ T.pack
-  "game is over. it is no one's turn."
-
-cannotPassOffTurn :: QuartoException
-cannotPassOffTurn = GameException $ T.pack
-  "cannot pass when it's not your turn."
-
-cannotPassPlacedPiece :: QuartoException
-cannotPassPlacedPiece = GameException $ T.pack
-  "cannot pass a piece that is already on the board."
-
-cannotPlaceOffTurn :: QuartoException
-cannotPlaceOffTurn = GameException $ T.pack
-  "cannot place when it's not your turn."
-
-cannotPlaceOnOccupiedTile :: QuartoException
-cannotPlaceOnOccupiedTile = GameException $ T.pack
-  "cannot place on a tile that is already occupied on the board"
-
--- Exceptions used in internal tests
-
-mismatchedTurn :: QuartoException
-mismatchedTurn = TestException $ T.pack
-  "attempted mismatched turn"
-
-errrrr :: QuartoException
-errrrr = GameException $ T.pack
-  ""
+instance Exception TestException where
+  displayException MismatchedTurn = "attempted mismatched turn"
