@@ -37,7 +37,6 @@ import Data.List (delete)
 import Data.List.NonEmpty (nonEmpty)
 import Data.Either
 import Data.Functor
-import Control.Applicative hiding (empty)
 import Data.Bifunctor
 
 import qualified Board as B
@@ -155,9 +154,6 @@ pass q@(PassQuarto b) pl p
     = Left CannotPassPlacedPiece
   | otherwise
     = placeQuarto b p
-
-rightToMaybe :: Either a b -> Maybe b
-rightToMaybe = either (const Nothing) Just
 
 place :: PlaceQuarto -> Player -> Tile -> Either QuartoException (Either PassQuarto FinalQuarto)
 place q@(PlaceQuarto b p) pl t

@@ -5,7 +5,6 @@ import Test.QuickCheck
 import Data.List
 import Data.Map ()
 import qualified Data.Map as Map
-import Data.Maybe
 import Data.Either
 import Prelude
 
