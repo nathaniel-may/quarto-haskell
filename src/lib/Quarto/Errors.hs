@@ -1,4 +1,4 @@
-module Errors where
+module Quarto.Errors where
 
 import Control.Exception
 

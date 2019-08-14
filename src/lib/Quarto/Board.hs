@@ -1,10 +1,10 @@
-module Board where
+module Quarto.Board where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
-import Errors
+import Quarto.Errors
 
 
 data Color  = Black | White  deriving (Eq, Enum, Ord, Bounded, Show, Read)

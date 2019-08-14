@@ -10,11 +10,11 @@ import Data.Foldable
 import Control.Exception
 import System.Exit
 
-import qualified Quarto as Q
-import Quarto
-import qualified Board as B
-import Board hiding (Property)
-import Errors
+import qualified Quarto.Game as Q
+import Quarto.Game
+import qualified Quarto.Board as B
+import Quarto.Board hiding (Property)
+import Quarto.Errors
 
 data Turn = PassTurn Player Piece | PlaceTurn Player Tile
           deriving (Eq, Show, Read)

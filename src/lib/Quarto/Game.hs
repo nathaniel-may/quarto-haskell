@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 
-module Quarto (
+module Quarto.Game (
   -- * constructors
     Quarto(..)
   , Player(..)
@@ -39,9 +39,9 @@ import Data.Either
 import Data.Functor
 import Data.Bifunctor
 
-import qualified Board as B
-import Board hiding (empty, place)
-import Errors
+import qualified Quarto.Board as B
+import Quarto.Board hiding (empty, place)
+import Quarto.Errors
 
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
