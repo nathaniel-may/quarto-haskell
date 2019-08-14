@@ -10,10 +10,11 @@ import Data.Foldable
 import Control.Exception
 import System.Exit
 
+import Quarto.Types hiding (Property)
 import qualified Quarto.Game as Q
 import Quarto.Game
 import qualified Quarto.Board as B
-import Quarto.Board hiding (Property)
+import Quarto.Board
 import Quarto.Errors
 import Quarto.Internal.Lib
 

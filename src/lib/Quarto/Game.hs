@@ -33,16 +33,10 @@ import Data.Bifunctor
 import qualified Quarto.Board as B
 import Quarto.Board hiding (empty, place)
 import Quarto.Errors
+import Quarto.Types
 import Quarto.Internal.Lib
+import Quarto.Internal.Unsafe
 
-
-data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
-
-data GameEnd = Winner Player | Tie deriving (Eq, Show, Read)
-
-newtype PassQuarto  = MkPassQuarto  Board         deriving (Eq, Show, Read)
-data    PlaceQuarto = MkPlaceQuarto Board Piece   deriving (Eq, Show, Read)
-data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
 
 -- not smart. used for consistency across Quarto types
 passQuarto :: Board -> PassQuarto
