@@ -19,15 +19,16 @@ library
   exposed-modules:     Quarto.Game
                      , Quarto.Types
                      , Quarto.Board
-                     , Quarto.Errors
+                     , Quarto.Testing
                      , Quarto.Internal.Lib
-                     , Quarto.Internal.Unsafe
   -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*
                      , containers ==0.6.*
                      , text ==1.2.*
+                     , QuickCheck ==2.12.*
   ghc-options:         -Wall
+                       -fno-warn-orphans
   hs-source-dirs:      src/lib
   default-language:    Haskell2010
 
@@ -51,4 +52,5 @@ test-suite quickcheck
   ghc-options:      -Wall
                     -fno-warn-orphans
                     -fno-warn-name-shadowing
+                    -fno-warn-orphans
   default-language: Haskell2010

@@ -1,6 +1,5 @@
-{-# LANGUAGE PatternSynonyms #-}
-
 module Quarto.Game (
+  -- TODO make this export list include all that my users need
   -- * constructors
     Quarto(..)
   , Player(..)
@@ -24,65 +23,37 @@ module Quarto.Game (
   , winningLines) where
 
 import Prelude hiding (lines, even)
-
 import Data.Maybe
 import Data.List.NonEmpty (nonEmpty)
 import Data.Functor
 import Data.Bifunctor
 
+import Quarto.Types
 import qualified Quarto.Board as B
 import Quarto.Board hiding (empty, place)
-import Quarto.Errors
-import Quarto.Types
 import Quarto.Internal.Lib
-import Quarto.Internal.Unsafe
 
 
 -- not smart. used for consistency across Quarto types
 passQuarto :: Board -> PassQuarto
-passQuarto = MkPassQuarto
+passQuarto = MkPassQuartoUnsafe
 
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
   | b `containsPiece` p
     = Left PieceAlreadyOnBoard
   | otherwise
-    = Right (MkPlaceQuarto b p)
+    = Right (MkPlaceQuartoUnsafe b p)
 
 finalQuarto :: Board -> Either QuartoException FinalQuarto
 finalQuarto b
   | not win && full b
-    = Right (MkFinalQuarto b Tie)
+    = Right (MkFinalQuartoUnsafe b Tie)
   | win
-    = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
+    = MkFinalQuartoUnsafe b . Winner <$> (turn . Pass $ passQuarto b)
   | otherwise
     = Left FinalQuartoMustBeCompleted
   where win = not . null $ winningLines b
-
-pattern PassQuarto :: Board -> PassQuarto
-pattern PassQuarto  b   <- MkPassQuarto  b
-
-pattern PlaceQuarto :: Board -> Piece -> PlaceQuarto
-pattern PlaceQuarto b p <- MkPlaceQuarto b p
-
-pattern FinalQuarto :: Board -> GameEnd -> FinalQuarto
-pattern FinalQuarto b e <- MkFinalQuarto b e
-
-{-# COMPLETE PassQuarto #-}
-{-# COMPLETE PlaceQuarto #-}
-{-# COMPLETE FinalQuarto #-}
-
-data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
-            deriving (Eq, Show, Read)
-
-data Line = Horizontal Index
-          | Vertical Index
-          | DiagonalForward
-          | DiagonalBackward
-          deriving (Eq, Show, Read)
-
-data WinningLine = WinningLine Line Attribute
-                 deriving (Eq, Show, Read)
 
 empty :: Quarto
 empty = Pass $ passQuarto B.empty

@@ -3,7 +3,6 @@ module Quarto.Board where
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
-import Quarto.Errors
 import Quarto.Types
 
 
