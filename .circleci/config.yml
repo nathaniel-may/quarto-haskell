@@ -16,7 +16,7 @@ jobs:
           command: stack --no-terminal build --test --no-run-tests
       - run:
           name: Run tests
-          command: stack --no-terminal test
+          command: stack test
       - save_cache:
           name: Cache Dependencies
           key: haskell-dependencies-{{ checksum "stack.yaml" }}-{{ checksum "liquid-quarto.cabal" }}
