@@ -170,6 +170,10 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces :: Quarto -> Bool
 prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
 prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
+-- Dummy for ci testing
+prop_x :: Player -> Bool
+prop_x _ = False
+
 
 pure []
 
