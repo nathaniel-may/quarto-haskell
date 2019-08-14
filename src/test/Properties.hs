@@ -8,6 +8,7 @@ import qualified Data.Map as Map
 import Data.Either
 import Data.Foldable
 import Control.Exception
+import System.Exit
 
 import qualified Quarto as Q
 import Quarto
@@ -173,4 +174,6 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 pure []
 
 main :: IO Bool
-main = $quickCheckAll
+main = $quickCheckAll >>= \case
+  True  -> exitSuccess
+  False -> exitFailure
