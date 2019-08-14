@@ -20,7 +20,7 @@ module Quarto (
   , place
   , lines
   , lineTiles
-  , isWin
+  , winsForLine
   , winningLines
   -- * functions that should be in a library
   , fromEither
@@ -97,6 +97,7 @@ data Line = Horizontal Index
           deriving (Eq, Show, Read)
 
 data WinningLine = WinningLine Line Attribute
+                 deriving (Eq, Show, Read)
 
 -- Internal Library Functions --
 
@@ -177,12 +178,12 @@ lineTiles (Horizontal i)   =      Tile i <$> indexes
 lineTiles DiagonalForward  = zipWith Tile indexes $ reverse indexes
 lineTiles DiagonalBackward = zipWith Tile (reverse indexes) indexes
 
-isWin :: Board -> Line -> [WinningLine]
-isWin b line = fmap (WinningLine line)
-             . concatMap (foldr1 same)
-             . nonEmpty
-             . filter ((==4) . length)
-             . mapMaybe (fmap attrs . get b) $ lineTiles line
+winsForLine :: Board -> Line -> [WinningLine]
+winsForLine b line = fmap (WinningLine line)
+                   . concatMap (foldr1 same)
+                   . nonEmpty
+                   . (\x -> if length x == 4 then x else [])
+                   . mapMaybe (fmap attrs . get b) $ lineTiles line
 
 winningLines :: Board -> [WinningLine]
-winningLines b = isWin b =<< lines
+winningLines b = winsForLine b =<< lines
