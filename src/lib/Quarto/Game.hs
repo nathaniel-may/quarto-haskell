@@ -21,27 +21,19 @@ module Quarto.Game (
   , lines
   , lineTiles
   , winsForLine
-  , winningLines
-  -- * functions that should be in a library
-  , fromEither
-  , mapEither
-  , mapBoth
-  , mapLeft
-  , same
-  ) where
+  , winningLines) where
 
 import Prelude hiding (lines, even)
 
 import Data.Maybe
-import Data.List (delete)
 import Data.List.NonEmpty (nonEmpty)
-import Data.Either
 import Data.Functor
 import Data.Bifunctor
 
 import qualified Quarto.Board as B
 import Quarto.Board hiding (empty, place)
 import Quarto.Errors
+import Quarto.Internal.Lib
 
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
@@ -55,7 +47,6 @@ data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
 -- not smart. used for consistency across Quarto types
 passQuarto :: Board -> PassQuarto
 passQuarto = MkPassQuarto
-
 
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
@@ -98,38 +89,6 @@ data Line = Horizontal Index
 
 data WinningLine = WinningLine Line Attribute
                  deriving (Eq, Show, Read)
-
--- Internal Library Functions --
-
-fromEither :: Either a a -> a
-fromEither (Left a)  = a
-fromEither (Right a) = a
-
-mapEither :: (a -> Either c b) -> [a] -> [b]
-mapEither f xs =
-  rights $ map f xs
-  -- snd . partitionEithers $ map f xs
-  -- [x | Right x <- f <$> xs]
-  -- fromEither . mapBoth (const []) (: []) =<< (f <$> xs)
-
--- bimap
-mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
-mapBoth f _ (Left x)  = Left (f x)
-mapBoth _ f (Right x) = Right (f x)
-
--- first (Bifunctor, in Data.Bifunctor)
-mapLeft :: (a -> c) -> Either a b -> Either c b
-mapLeft f = mapBoth f id
-
--- Data.List.intersect
-same :: Eq a => [a] -> [a] -> [a]
-same [] _ = []
-same _ [] = []
-same (x:xs) ys = if x `elem` ys
-                 then x : same xs (delete x ys)
-                 else same xs ys
-
--- Quarto functions
 
 empty :: Quarto
 empty = Pass $ passQuarto B.empty

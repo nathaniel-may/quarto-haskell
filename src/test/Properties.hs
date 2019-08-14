@@ -15,6 +15,7 @@ import Quarto.Game
 import qualified Quarto.Board as B
 import Quarto.Board hiding (Property)
 import Quarto.Errors
+import Quarto.Internal.Lib
 
 data Turn = PassTurn Player Piece | PlaceTurn Player Tile
           deriving (Eq, Show, Read)

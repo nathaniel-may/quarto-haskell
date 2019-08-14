@@ -19,6 +19,7 @@ library
   exposed-modules:     Quarto.Game
                      , Quarto.Board
                      , Quarto.Errors
+                     , Quarto.Internal.Lib
   -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*
