@@ -77,7 +77,7 @@ instance Arbitrary Player where
   shrink    = shrinkBoundedEnum
 
 instance Arbitrary Turns where
-  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements) -- TODO this is where my error is?
+  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements)
     where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
   shrink (Turns [])    = []
   shrink (Turns turns) = [Turns (init turns)]
@@ -165,12 +165,9 @@ prop_p1MustStart pl p = pl == P2 && rejected ||
 prop_meta_turnsNeverRejected :: Turns -> Bool
 prop_meta_turnsNeverRejected ts = isRight (takeTurnsWithErrors ts)
 
-prop_finalGamesAlwaysHaveAtLeast4Pieces :: Turns -> Bool
-prop_finalGamesAlwaysHaveAtLeast4Pieces ts =
-  case takeTurns ts of
-    Final (FinalQuarto b _) -> size b >= 4
-    _ -> True
-
+prop_finalGamesAlwaysHaveAtLeast4Pieces :: Quarto -> Bool
+prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
+prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
 
 pure []
