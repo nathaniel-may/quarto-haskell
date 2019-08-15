@@ -18,6 +18,10 @@ mapEither f xs =
 enumerate :: (Enum a, Bounded a) => [a]
 enumerate = [minBound..maxBound]
 
+allUnique :: (Eq a) => [a] -> Bool
+allUnique []     = True
+allUnique (x:xs) = x `notElem` xs && allUnique xs
+
 -- bimap
 mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
 mapBoth f _ (Left x)  = Left (f x)

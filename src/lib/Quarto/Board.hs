@@ -8,7 +8,7 @@ import Quarto.Internal.Lib
 
 
 empty :: Board
-empty = Board Map.empty
+empty = MkBoardUnsafe Map.empty
 
 attr :: Property -> Attribute
 attr p = case p of
@@ -58,10 +58,11 @@ place :: Board -> Tile -> Piece -> Either QuartoException Board
 place b t p
   | b `contains` t
     = Left TileOccupied
+    -- this check could be deferred to the board but this exception is clearer for this function
   | b `containsPiece` p
     = Left PieceAlreadyPlaced
   | otherwise
-    = Right . Board . Map.insert t p $ tiles b
+    = board . Map.insert t p $ tiles b
 
 even :: Board -> Bool
 even = Prelude.even . size

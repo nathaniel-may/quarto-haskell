@@ -2,8 +2,10 @@
 
 module Quarto.Types where
 
-import Data.Map (Map)
+import Data.Map (Map, elems)
 import Control.Exception (Exception, displayException)
+
+import Quarto.Internal.Lib
 
 
 data Color  = White | Black  deriving (Eq, Enum, Ord, Bounded, Read)
@@ -62,8 +64,19 @@ instance Show VIndex where
 data Tile = Tile HIndex VIndex deriving (Eq, Ord, Bounded, Show, Read)
 
 -- TODO smart constructor checks --
-newtype Board = Board { tiles :: Map Tile Piece }
+newtype Board = MkBoardUnsafe { tiles :: Map Tile Piece }
               deriving (Eq, Show, Read)
+
+board :: Map Tile Piece -> Either QuartoException Board
+board m | allUnique (elems m)
+          = Right (MkBoardUnsafe m)
+        | otherwise
+          = Left BoardPiecesMustBeUnique
+
+pattern Board :: Map Tile Piece -> Board
+pattern Board m <- MkBoardUnsafe m
+
+{-# COMPLETE Board #-}
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
@@ -105,6 +118,7 @@ data    FinalQuarto = MkFinalQuartoUnsafe Board GameEnd deriving (Eq, Show, Read
 
 data QuartoException = TileOccupied
                      | PieceAlreadyPlaced
+                     | BoardPiecesMustBeUnique
                      | PieceAlreadyOnBoard
                      | FinalQuartoMustBeCompleted
                      | FinishedGameHasNoTurn
@@ -117,6 +131,7 @@ data QuartoException = TileOccupied
 instance Exception QuartoException where
   displayException TileOccupied               = "cannot place a piece on an already occupied tile"
   displayException PieceAlreadyPlaced         = "cannot place a piece that is already on the board"
+  displayException BoardPiecesMustBeUnique    = "to create a board all pieces on the board must be unique"
   displayException PieceAlreadyOnBoard        = "piece is already on the board"
   displayException FinalQuartoMustBeCompleted = "cannot create a FinalQuarto with a board that isn't a win or a tie"
   displayException FinishedGameHasNoTurn      = "game is over. it is no one's turn."

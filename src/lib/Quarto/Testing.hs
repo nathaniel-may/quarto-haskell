@@ -40,8 +40,8 @@ instance Arbitrary Quarto where
       ++ shrink (Pass (passQuarto b))
 
 instance Arbitrary Board where
-  arbitrary        = Board . Map.fromList <$> (sublistOf =<< placements)
-  shrink (Board b) = [Board $ Map.deleteAt i b | i <- [0 .. length b - 1]]
+  arbitrary        = MkBoardUnsafe . Map.fromList <$> (sublistOf =<< placements)
+  shrink (Board b) = [ MkBoardUnsafe $ Map.deleteAt i b | i <- [0 .. length b - 1] ]
 
 instance Arbitrary HIndex where
   arbitrary = arbitraryBoundedEnum

@@ -41,7 +41,7 @@ prop_boardPlace b t p
   | b `contains` t || b `containsPiece` p
     = isLeft $ B.place b t p
   | otherwise
-    = B.place b t p == Right (Board . Map.insert t p $ tiles b)
+    = B.place b t p == (board . Map.insert t p $ tiles b)
 
 prop_boardContains :: Board -> Tile -> Bool
 prop_boardContains b t =
@@ -60,8 +60,8 @@ prop_meta_FinalQuartoExists = exists arbitrary (\case
 
 prop_turn :: Quarto -> Bool
 prop_turn q@(Final _)  = isLeft $ turn q
-prop_turn q@(Pass _)   = turn q == if B.even (board q) then Right P1 else Right P2
-prop_turn q@(Place _)  = turn q == if B.even (board q) then Right P2 else Right P1
+prop_turn q@(Pass _)   = turn q == if B.even (getBoard q) then Right P1 else Right P2
+prop_turn q@(Place _)  = turn q == if B.even (getBoard q) then Right P2 else Right P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
 prop_activePieceNotPlaced t p = isLeft $ flip placeQuarto p =<< B.place B.empty t p
