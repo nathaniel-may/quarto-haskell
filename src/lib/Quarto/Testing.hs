@@ -1,3 +1,10 @@
+-----------------------------------------------------------------------------
+-- |
+-- Module  :  Quarto.Testing
+--
+-- This module provides Arbitrary instances for testing with QuickCheck
+-----------------------------------------------------------------------------
+
 module Quarto.Testing where
 
 import qualified Data.Map as Map
@@ -10,44 +17,6 @@ import qualified Quarto.Game as Q
 import Quarto.Game
 import Quarto.Board
 import Quarto.Internal.Lib
-
-
-data QuartoTestException = QuartoE QuartoException | TestE TestException
-                         deriving (Eq, Show, Read)
-
-data TestException = MismatchedTurn
-                   deriving (Eq, Show, Read)
-
-instance Exception TestException where
-  displayException MismatchedTurn  = "attempted mismatched turn"
-
-takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
-takeTurn _              q@(Final _) = Right q
-takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
-takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
-takeTurn _ _                        = Left (TestE MismatchedTurn)
-
-takeTurns :: Turns -> Quarto
-takeTurns ts = foldl (\q t -> fromRight q $ takeTurn t q) Q.empty (turns ts)
-
-data Turn = PassTurn Player Piece | PlaceTurn Player Tile
-          deriving (Eq, Show, Read)
-
-newtype Turns = Turns { turns :: [Turn] }
-              deriving (Eq, Show, Read)
-
-shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
-shrinkBoundedEnum x = takeWhile (/= x) enumerate
-
-placements :: Gen [(Tile, Piece)]
-placements = do
-  sTiles  <- shuffle allTiles
-  sPieces <- shuffle allPieces
-  pure $ zip sTiles sPieces
-
--- infinite list of [(P1, P2), (P2, P1) ...]
-players :: [(Player, Player)]
-players = cycle [(P1, P2), (P2, P1)]
 
 -- QuickCheck instances
 
@@ -109,3 +78,44 @@ instance Arbitrary Piece where
     ++ [Piece c  s' h  t  | s' <- shrink s]
     ++ [Piece c  s  h' t  | h' <- shrink h]
     ++ [Piece c  s  h  t' | t' <- shrink t]
+
+-- Types
+
+data QuartoTestException = QuartoE QuartoException | TestE TestException
+                         deriving (Eq, Show, Read)
+
+data TestException = MismatchedTurn
+                   deriving (Eq, Show, Read)
+
+instance Exception TestException where
+  displayException MismatchedTurn  = "attempted mismatched turn"
+
+data Turn = PassTurn Player Piece | PlaceTurn Player Tile
+          deriving (Eq, Show, Read)
+
+newtype Turns = Turns { turns :: [Turn] }
+              deriving (Eq, Show, Read)
+
+-- Functions
+
+takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
+takeTurn _              q@(Final _) = Right q
+takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
+takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
+takeTurn _ _                        = Left (TestE MismatchedTurn)
+
+takeTurns :: Turns -> Quarto
+takeTurns ts = foldl (\q t -> fromRight q $ takeTurn t q) Q.empty (turns ts)
+
+shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
+shrinkBoundedEnum x = takeWhile (/= x) enumerate
+
+placements :: Gen [(Tile, Piece)]
+placements = do
+  sTiles  <- shuffle allTiles
+  sPieces <- shuffle allPieces
+  pure $ zip sTiles sPieces
+
+-- infinite list of [(P1, P2), (P2, P1) ...]
+players :: [(Player, Player)]
+players = cycle [(P1, P2), (P2, P1)]
