@@ -18,6 +18,7 @@ import Quarto.Game
 import Quarto.Board
 import Quarto.Internal.Lib
 
+
 -- QuickCheck instances
 
 instance Arbitrary Player where
