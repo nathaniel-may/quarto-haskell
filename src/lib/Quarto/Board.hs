@@ -65,6 +65,5 @@ place b t p
   | otherwise
     = Right . Board . Map.insert t p $ tiles b
 
--- TODO drop is
 even :: Board -> Bool
 even = Prelude.even . size

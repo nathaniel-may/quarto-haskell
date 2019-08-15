@@ -6,10 +6,26 @@ import Data.Map (Map)
 import Control.Exception (Exception, displayException)
 
 
-data Color  = Black | White  deriving (Eq, Enum, Ord, Bounded, Show, Read)
-data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Show, Read)
-data Height = Tall  | Short  deriving (Eq, Enum, Ord, Bounded, Show, Read)
-data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Color  = White | Black  deriving (Eq, Enum, Ord, Bounded, Read)
+data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Read)
+data Height = Tall  | Short  deriving (Eq, Enum, Ord, Bounded, Read)
+data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded, Read)
+
+instance Show Color where
+  show Black = "B"
+  show White = "W"
+
+instance Show Shape where
+  show Round  = "R"
+  show Square = "Q"
+
+instance Show Height where
+  show Tall  = "T"
+  show Short = "S"
+
+instance Show Top where
+  show Flat = "F"
+  show Hole = "H"
 
 data Attribute = W | B | R | Q | S | T | F | H
                deriving (Eq, Enum, Ord, Bounded, Show, Read)
@@ -20,7 +36,10 @@ data Property = PropColor  Color
               | PropTop    Top
 
 data Piece = Piece Color Shape Height Top
-           deriving (Eq, Show, Read)
+           deriving (Eq, Read)
+
+instance Show Piece where
+  show = show <> show <> show <> show
 
 data Index = I1 | I2 | I3 | I4
            deriving (Eq, Enum, Ord, Bounded, Show, Read)
