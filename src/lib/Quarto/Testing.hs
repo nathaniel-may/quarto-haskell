@@ -37,7 +37,7 @@ newtype Turns = Turns { turns :: [Turn] }
               deriving (Eq, Show, Read)
 
 shrinkBoundedEnum :: (Eq a, Enum a, Bounded a) => a -> [a]
-shrinkBoundedEnum x = takeWhile (/= x) [minBound..maxBound]
+shrinkBoundedEnum x = takeWhile (/= x) enumerate
 
 placements :: Gen [(Tile, Piece)]
 placements = do
@@ -73,7 +73,11 @@ instance Arbitrary Board where
   arbitrary        = Board . Map.fromList <$> (sublistOf =<< placements)
   shrink (Board b) = [Board $ Map.deleteAt i b | i <- [0 .. length b - 1]]
 
-instance Arbitrary Index where
+instance Arbitrary HIndex where
+  arbitrary = arbitraryBoundedEnum
+  shrink    = shrinkBoundedEnum
+
+instance Arbitrary VIndex where
   arbitrary = arbitraryBoundedEnum
   shrink    = shrinkBoundedEnum
 

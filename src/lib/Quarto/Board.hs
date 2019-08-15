@@ -4,6 +4,7 @@ import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
 import Quarto.Types
+import Quarto.Internal.Lib
 
 
 empty :: Board
@@ -26,17 +27,14 @@ attrs (Piece c s h t) = [attr $ PropColor c,
                          attr $ PropHeight h,
                          attr $ PropTop t]
 
-indexes :: [Index]
-indexes = [minBound..maxBound]
-
 allPieces :: [Piece]
-allPieces = [ Piece c s h t | c <- [minBound..maxBound]
-                            , s <- [minBound..maxBound]
-                            , h <- [minBound..maxBound]
-                            , t <- [minBound..maxBound] ]
+allPieces = [ Piece c s h t | c <- enumerate
+                            , s <- enumerate
+                            , h <- enumerate
+                            , t <- enumerate ]
 
 allTiles :: [Tile]
-allTiles = [ Tile h v | h <- indexes, v <- indexes ]
+allTiles = [ Tile h v | h <- enumerate, v <- enumerate ]
 
 full :: Board -> Bool
 full b = size b >= 16

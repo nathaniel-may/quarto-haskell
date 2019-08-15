@@ -15,6 +15,9 @@ mapEither f xs =
   -- [x | Right x <- f <$> xs]
   -- fromEither . mapBoth (const []) (: []) =<< (f <$> xs)
 
+enumerate :: (Enum a, Bounded a) => [a]
+enumerate = [minBound..maxBound]
+
 -- bimap
 mapBoth :: (a -> c) -> (b -> d) -> Either a b -> Either c d
 mapBoth f _ (Left x)  = Left (f x)

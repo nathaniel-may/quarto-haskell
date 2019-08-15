@@ -92,15 +92,15 @@ place q@(PlaceQuarto b p) pl t
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
-     <> (Horizontal <$> indexes)
-     <> (Vertical   <$> indexes)
+     <> (Horizontal <$> enumerate)
+     <> (Vertical   <$> enumerate)
 
 -- TODO list of size 4 --
 lineTiles :: Line -> [Tile]
-lineTiles (Vertical   i)   = flip Tile i <$> indexes
-lineTiles (Horizontal i)   =      Tile i <$> indexes
-lineTiles DiagonalForward  = zipWith Tile indexes $ reverse indexes
-lineTiles DiagonalBackward = zipWith Tile (reverse indexes) indexes
+lineTiles (Vertical   i)   = flip Tile i <$> enumerate
+lineTiles (Horizontal i)   =      Tile i <$> enumerate
+lineTiles DiagonalForward  = zipWith Tile enumerate $ reverse enumerate
+lineTiles DiagonalBackward = zipWith Tile (reverse enumerate) enumerate
 
 winsForLine :: Board -> Line -> [WinningLine]
 winsForLine b line = fmap (WinningLine line)

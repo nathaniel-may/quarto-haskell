@@ -41,10 +41,25 @@ data Piece = Piece Color Shape Height Top
 instance Show Piece where
   show = show <> show <> show <> show
 
-data Index = I1 | I2 | I3 | I4
-           deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data HIndex = HA | HB | HC | HD
+           deriving (Eq, Enum, Ord, Bounded, Read)
 
-data Tile = Tile Index Index deriving (Eq, Ord, Bounded, Show, Read)
+data VIndex = V1 | V2 | V3 | V4
+          deriving (Eq, Enum, Ord, Bounded, Read)
+
+instance Show HIndex where
+  show HA = "A"
+  show HB = "B"
+  show HC = "C"
+  show HD = "D"
+
+instance Show VIndex where
+  show V1 = "1"
+  show V2 = "2"
+  show V3 = "3"
+  show V4 = "4"
+
+data Tile = Tile HIndex VIndex deriving (Eq, Ord, Bounded, Show, Read)
 
 -- TODO smart constructor checks --
 newtype Board = Board { tiles :: Map Tile Piece }
@@ -71,8 +86,8 @@ pattern FinalQuarto b e <- MkFinalQuartoUnsafe b e
 data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
             deriving (Eq, Show, Read)
 
-data Line = Horizontal Index
-          | Vertical Index
+data Line = Horizontal HIndex
+          | Vertical VIndex
           | DiagonalForward
           | DiagonalBackward
           deriving (Eq, Show, Read)
