@@ -3,18 +3,17 @@
 import Test.QuickCheck
 
 import Prelude
-import Data.Map ()
 import qualified Data.Map as Map
 import Data.Either
 import Data.Foldable
 import System.Exit
 
-import Quarto.Types hiding (Property)
 import qualified Quarto.Game as Q
 import Quarto.Game
-import qualified Quarto.Board as B
-import Quarto.Board
 import Quarto.Testing
+import Quarto.Internal.Types hiding (Property)
+import qualified Quarto.Internal.Board as B
+import Quarto.Internal.Board
 
 -- if and only if --
 iff :: Bool -> Bool -> Bool

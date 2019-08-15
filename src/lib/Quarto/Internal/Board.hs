@@ -1,9 +1,9 @@
-module Quarto.Board where
+module Quarto.Internal.Board where
 
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
-import Quarto.Types
+import Quarto.Internal.Types
 import Quarto.Internal.Lib
 
 

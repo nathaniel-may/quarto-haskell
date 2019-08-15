@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 
-module Quarto.Types where
+module Quarto.Internal.Types where
 
 import Data.Map (Map, elems)
 import Control.Exception (Exception, displayException)

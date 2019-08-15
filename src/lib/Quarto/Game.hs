@@ -28,9 +28,9 @@ import Data.List.NonEmpty (nonEmpty)
 import Data.Functor
 import Data.Bifunctor
 
-import Quarto.Types
-import qualified Quarto.Board as B
-import Quarto.Board hiding (empty, place)
+import Quarto.Internal.Types
+import qualified Quarto.Internal.Board as B
+import Quarto.Internal.Board hiding (empty, place)
 import Quarto.Internal.Lib
 
 

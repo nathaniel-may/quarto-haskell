@@ -17,9 +17,9 @@ category:            Game
 
 library
   exposed-modules:     Quarto.Game
-                     , Quarto.Types
-                     , Quarto.Board
                      , Quarto.Testing
+                     , Quarto.Internal.Types
+                     , Quarto.Internal.Board
                      , Quarto.Internal.Lib
   -- other-modules:
   -- other-extensions:
