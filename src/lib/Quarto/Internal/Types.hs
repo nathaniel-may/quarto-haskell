@@ -7,6 +7,7 @@ import Control.Exception (Exception, displayException)
 
 import Quarto.Internal.Lib
 
+-- Types and Instances --
 
 data Color  = White | Black  deriving (Eq, Enum, Ord, Bounded, Read)
 data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Read)
@@ -63,38 +64,9 @@ instance Show VIndex where
 
 data Tile = Tile HIndex VIndex deriving (Eq, Ord, Bounded, Show, Read)
 
--- TODO smart constructor checks --
-newtype Board = MkBoardUnsafe { tiles :: Map Tile Piece }
-              deriving (Eq, Show, Read)
-
-board :: Map Tile Piece -> Either QuartoException Board
-board m | allUnique (elems m)
-          = Right (MkBoardUnsafe m)
-        | otherwise
-          = Left BoardPiecesMustBeUnique
-
-pattern Board :: Map Tile Piece -> Board
-pattern Board m <- MkBoardUnsafe m
-
-{-# COMPLETE Board #-}
-
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
 data GameEnd = Winner Player | Tie deriving (Eq, Show, Read)
-
-
-pattern PassQuarto :: Board -> PassQuarto
-pattern PassQuarto  b   <- MkPassQuartoUnsafe  b
-
-pattern PlaceQuarto :: Board -> Piece -> PlaceQuarto
-pattern PlaceQuarto b p <- MkPlaceQuartoUnsafe b p
-
-pattern FinalQuarto :: Board -> GameEnd -> FinalQuarto
-pattern FinalQuarto b e <- MkFinalQuartoUnsafe b e
-
-{-# COMPLETE PassQuarto #-}
-{-# COMPLETE PlaceQuarto #-}
-{-# COMPLETE FinalQuarto #-}
 
 data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
             deriving (Eq, Show, Read)
@@ -108,13 +80,42 @@ data Line = Horizontal HIndex
 data WinningLine = WinningLine Line Attribute
                  deriving (Eq, Show, Read)
 
+-- Private Constructors --
+
 -- game logic assumes these types have only been constructed via their associated
 -- smart constructors. Using them directly may cause incorrect behavior.
-newtype PassQuarto  = MkPassQuartoUnsafe  Board         deriving (Eq, Show, Read)
-data    PlaceQuarto = MkPlaceQuartoUnsafe Board Piece   deriving (Eq, Show, Read)
-data    FinalQuarto = MkFinalQuartoUnsafe Board GameEnd deriving (Eq, Show, Read)
 
--- Exceptions
+newtype Board = MkBoard { tiles :: Map Tile Piece }
+              deriving (Eq, Show, Read)
+
+newtype PassQuarto  = MkPassQuarto  Board         deriving (Eq, Show, Read)
+data    PlaceQuarto = MkPlaceQuarto Board Piece   deriving (Eq, Show, Read)
+data    FinalQuarto = MkFinalQuarto Board GameEnd deriving (Eq, Show, Read)
+
+board :: Map Tile Piece -> Either QuartoException Board
+board m | allUnique (elems m)
+          = Right (MkBoard m)
+        | otherwise
+          = Left BoardPiecesMustBeUnique
+
+-- Pattern Matching --
+pattern Board :: Map Tile Piece -> Board
+pattern Board m <- MkBoard m
+{-# COMPLETE Board #-}
+
+pattern PassQuarto :: Board -> PassQuarto
+pattern PassQuarto  b   <- MkPassQuarto  b
+{-# COMPLETE PassQuarto #-}
+
+pattern PlaceQuarto :: Board -> Piece -> PlaceQuarto
+pattern PlaceQuarto b p <- MkPlaceQuarto b p
+{-# COMPLETE PlaceQuarto #-}
+
+pattern FinalQuarto :: Board -> GameEnd -> FinalQuarto
+pattern FinalQuarto b e <- MkFinalQuarto b e
+{-# COMPLETE FinalQuarto #-}
+
+-- Exceptions --
 
 data QuartoException = TileOccupied
                      | PieceAlreadyPlaced

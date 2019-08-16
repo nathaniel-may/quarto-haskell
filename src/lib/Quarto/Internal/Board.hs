@@ -8,7 +8,7 @@ import Quarto.Internal.Lib
 
 
 empty :: Board
-empty = MkBoardUnsafe Map.empty
+empty = MkBoard Map.empty
 
 attr :: Property -> Attribute
 attr p = case p of

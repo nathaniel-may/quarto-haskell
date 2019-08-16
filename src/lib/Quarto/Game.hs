@@ -36,21 +36,21 @@ import Quarto.Internal.Lib
 
 -- not smart. used for consistency across Quarto types
 passQuarto :: Board -> PassQuarto
-passQuarto = MkPassQuartoUnsafe
+passQuarto = MkPassQuarto
 
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
   | b `containsPiece` p
     = Left PieceAlreadyOnBoard
   | otherwise
-    = Right (MkPlaceQuartoUnsafe b p)
+    = Right (MkPlaceQuarto b p)
 
 finalQuarto :: Board -> Either QuartoException FinalQuarto
 finalQuarto b
   | not win && full b
-    = Right (MkFinalQuartoUnsafe b Tie)
+    = Right (MkFinalQuarto b Tie)
   | win
-    = MkFinalQuartoUnsafe b . Winner <$> (turn . Pass $ passQuarto b)
+    = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
   | otherwise
     = Left FinalQuartoMustBeCompleted
   where win = not . null $ winningLines b
