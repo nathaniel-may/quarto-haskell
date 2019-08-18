@@ -15,6 +15,8 @@ import Quarto.Internal.Types hiding (Property)
 import qualified Quarto.Internal.Board as B
 import Quarto.Internal.Board
 
+-- Functions --
+
 -- if and only if --
 iff :: Bool -> Bool -> Bool
 iff = (==)
@@ -34,6 +36,14 @@ exists' n gen prop = do
 
 takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
 takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
+
+recognizesWin :: Line -> Property
+recognizesWin line =
+  exists arbitrary (\case
+    Final (FinalQuarto b _) -> line `elem` ((\(WinningLine l _) -> l) <$> winningLines b)
+    _ -> False)
+
+-- Properties --
 
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
@@ -77,11 +87,35 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces :: Quarto -> Bool
 prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
 prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
-prop_recognizesDiagonalBackwardsWin :: Property
-prop_recognizesDiagonalBackwardsWin =
-  exists arbitrary (\case
-    Final (FinalQuarto b _) -> DiagonalBackward `elem` ((\(WinningLine l _) -> l) <$> winningLines b)
-    _ -> False)
+prop_recognizesDiagonalBackwardWin :: Property
+prop_recognizesDiagonalBackwardWin = recognizesWin DiagonalBackward
+
+prop_recognizesDiagonalForwardWin :: Property
+prop_recognizesDiagonalForwardWin = recognizesWin DiagonalForward
+
+prop_recognizesHAWin :: Property
+prop_recognizesHAWin = recognizesWin (Horizontal HA)
+
+prop_recognizesHBWin :: Property
+prop_recognizesHBWin = recognizesWin (Horizontal HB)
+
+prop_recognizesHCWin :: Property
+prop_recognizesHCWin = recognizesWin (Horizontal HC)
+
+prop_recognizesHDWin :: Property
+prop_recognizesHDWin = recognizesWin (Horizontal HD)
+
+prop_recognizesV1Win :: Property
+prop_recognizesV1Win = recognizesWin (Vertical V1)
+
+prop_recognizesV2Win :: Property
+prop_recognizesV2Win = recognizesWin (Vertical V2)
+
+prop_recognizesV3Win :: Property
+prop_recognizesV3Win = recognizesWin (Vertical V3)
+
+prop_recognizesV4Win :: Property
+prop_recognizesV4Win = recognizesWin (Vertical V4)
 
 
 pure []
