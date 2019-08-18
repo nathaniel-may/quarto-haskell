@@ -40,7 +40,7 @@ takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
 recognizesWin :: Line -> Property
 recognizesWin line =
   exists arbitrary (\case
-    Final (FinalQuarto b _) -> line `elem` ((\(WinningLine l _) -> l) <$> winningLines b)
+    Final (FinalQuarto _ (Winner _ winLines)) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
     _ -> False)
 
 -- Properties --
@@ -124,7 +124,7 @@ prop_recognizesV4Win = recognizesWin (Vertical V4)
 
 prop_recognizesMultiWin :: Property
 prop_recognizesMultiWin = exists arbitrary (\case
-    Final (FinalQuarto b _) -> length ((\(WinningLine l _) -> l) <$> winningLines b) > 2
+    Final (FinalQuarto _ (Winner _ winLines)) -> length ((\(WinningLine l _) -> l) <$> winLines) > 2
     _ -> False)
 
 
