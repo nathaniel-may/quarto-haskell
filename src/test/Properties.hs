@@ -87,6 +87,11 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces :: Quarto -> Bool
 prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
 prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
+prop_recognizesTie :: Property
+prop_recognizesTie = exists arbitrary (\case
+                                          Final (FinalQuarto _ Tie) -> True
+                                          _ -> False)
+
 prop_recognizesDiagonalBackwardWin :: Property
 prop_recognizesDiagonalBackwardWin = recognizesWin DiagonalBackward
 
@@ -116,6 +121,11 @@ prop_recognizesV3Win = recognizesWin (Vertical V3)
 
 prop_recognizesV4Win :: Property
 prop_recognizesV4Win = recognizesWin (Vertical V4)
+
+prop_recognizesMultiWin :: Property
+prop_recognizesMultiWin = exists arbitrary (\case
+    Final (FinalQuarto b _) -> length ((\(WinningLine l _) -> l) <$> winningLines b) > 2
+    _ -> False)
 
 
 pure []
