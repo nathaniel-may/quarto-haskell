@@ -111,9 +111,13 @@ prop_recognizesMultiLineWin = finalExists (\case
 
 prop_recognizesMultiAttributeWin :: Property
 prop_recognizesMultiAttributeWin = finalExists (\case
+    (FinalQuarto _ Tie) -> False
     (FinalQuarto _ (Winner _ winLines)) ->
-      any (>=2) $ Map.elems $ foldl (\m (WinningLine _ a) -> Map.insert a (fromMaybe (0 :: Int) (Map.lookup a m) + 1) m) Map.empty winLines
-    _ -> False)
+      any (>=2) . Map.elems $
+        foldl
+          (\m (WinningLine _ a) -> Map.insert a (fromMaybe (0 :: Int) (Map.lookup a m) + 1) m)
+          Map.empty
+          winLines)
 
 
 pure []
