@@ -77,6 +77,12 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces :: Quarto -> Bool
 prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
 prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
+prop_recognizesDiagonalBackwardsWin :: Property
+prop_recognizesDiagonalBackwardsWin =
+  exists arbitrary (\case
+    Final (FinalQuarto b _) -> DiagonalBackward `elem` ((\(WinningLine l _) -> l) <$> winningLines b)
+    _ -> False)
+
 
 pure []
 
