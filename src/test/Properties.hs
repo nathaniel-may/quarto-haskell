@@ -45,12 +45,9 @@ finalExists f =
     _       -> False)
 
 recognizesWin :: Line -> Property
-recognizesWin line =
-  exists arbitrary (\case
-    Final (FinalQuarto _ (Winner _ winLines)) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
-    _ -> False)
-
--- Properties --
+recognizesWin line = finalExists (\case
+  (FinalQuarto _ (Winner _ winLines)) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
+  (FinalQuarto _ Tie) -> False)
 
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
@@ -106,9 +103,9 @@ prop_recognizesAllWinLines = conjoin $ recognizesWin
                           : (Horizontal <$> enumerate)
                           <> (Vertical <$> enumerate)
 
-prop_recognizesMultiWin :: Property
-prop_recognizesMultiWin = exists arbitrary (\case
-    Final (FinalQuarto _ (Winner _ winLines)) -> length ((\(WinningLine l _) -> l) <$> winLines) > 2
+prop_recognizesMultiLineWin :: Property
+prop_recognizesMultiLineWin = finalExists (\case
+    (FinalQuarto _ (Winner _ winLines)) -> length ((\(WinningLine l _) -> l) <$> winLines) > 2
     _ -> False)
 
 
