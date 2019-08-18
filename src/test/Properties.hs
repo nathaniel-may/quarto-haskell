@@ -3,6 +3,7 @@
 import Test.QuickCheck
 
 import Prelude
+import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import Data.Either
 import Data.Foldable
@@ -106,6 +107,12 @@ prop_recognizesAllWinLines = conjoin $ recognizesWin
 prop_recognizesMultiLineWin :: Property
 prop_recognizesMultiLineWin = finalExists (\case
     (FinalQuarto _ (Winner _ winLines)) -> length ((\(WinningLine l _) -> l) <$> winLines) > 2
+    _ -> False)
+
+prop_recognizesMultiAttributeWin :: Property
+prop_recognizesMultiAttributeWin = finalExists (\case
+    (FinalQuarto _ (Winner _ winLines)) ->
+      any (>=2) $ Map.elems $ foldl (\m (WinningLine _ a) -> Map.insert a (fromMaybe (0 :: Int) (Map.lookup a m) + 1) m) Map.empty winLines
     _ -> False)
 
 
