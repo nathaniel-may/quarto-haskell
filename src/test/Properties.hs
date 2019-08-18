@@ -12,6 +12,7 @@ import qualified Quarto.Game as Q
 import Quarto.Game
 import Quarto.Testing
 import Quarto.Internal.Types hiding (Property)
+import Quarto.Internal.Lib
 import qualified Quarto.Internal.Board as B
 import Quarto.Internal.Board
 
@@ -36,6 +37,12 @@ exists' n gen prop = do
 
 takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
 takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
+
+finalExists :: (FinalQuarto -> Bool) -> Property
+finalExists f =
+  exists arbitrary (\case
+    Final q -> f q
+    _       -> False)
 
 recognizesWin :: Line -> Property
 recognizesWin line =
@@ -92,35 +99,12 @@ prop_recognizesTie = exists arbitrary (\case
                                           Final (FinalQuarto _ Tie) -> True
                                           _ -> False)
 
-prop_recognizesDiagonalBackwardWin :: Property
-prop_recognizesDiagonalBackwardWin = recognizesWin DiagonalBackward
-
-prop_recognizesDiagonalForwardWin :: Property
-prop_recognizesDiagonalForwardWin = recognizesWin DiagonalForward
-
-prop_recognizesHAWin :: Property
-prop_recognizesHAWin = recognizesWin (Horizontal HA)
-
-prop_recognizesHBWin :: Property
-prop_recognizesHBWin = recognizesWin (Horizontal HB)
-
-prop_recognizesHCWin :: Property
-prop_recognizesHCWin = recognizesWin (Horizontal HC)
-
-prop_recognizesHDWin :: Property
-prop_recognizesHDWin = recognizesWin (Horizontal HD)
-
-prop_recognizesV1Win :: Property
-prop_recognizesV1Win = recognizesWin (Vertical V1)
-
-prop_recognizesV2Win :: Property
-prop_recognizesV2Win = recognizesWin (Vertical V2)
-
-prop_recognizesV3Win :: Property
-prop_recognizesV3Win = recognizesWin (Vertical V3)
-
-prop_recognizesV4Win :: Property
-prop_recognizesV4Win = recognizesWin (Vertical V4)
+prop_recognizesAllWinLines :: Property
+prop_recognizesAllWinLines = conjoin $ recognizesWin
+                          <$> DiagonalBackward
+                          : DiagonalForward
+                          : (Horizontal <$> enumerate)
+                          <> (Vertical <$> enumerate)
 
 prop_recognizesMultiWin :: Property
 prop_recognizesMultiWin = exists arbitrary (\case
