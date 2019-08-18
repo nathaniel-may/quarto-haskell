@@ -47,13 +47,13 @@ placeQuarto b p
 
 finalQuarto :: Board -> Either QuartoException FinalQuarto
 finalQuarto b
-  | not win && full b
+  | null winLines && full b
     = Right (MkFinalQuarto b Tie)
-  | win
-    = MkFinalQuarto b . Winner <$> (turn . Pass $ passQuarto b)
+  | (not . null) winLines
+    = MkFinalQuarto b . flip Winner winLines <$> (turn . Pass $ passQuarto b)
   | otherwise
     = Left FinalQuartoMustBeCompleted
-  where win = not . null $ winningLines b
+  where winLines = winningLines b
 
 empty :: Quarto
 empty = Pass $ passQuarto B.empty

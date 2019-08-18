@@ -66,7 +66,7 @@ data Tile = Tile HIndex VIndex deriving (Eq, Ord, Bounded, Show, Read)
 
 data Player = P1 | P2 deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
-data GameEnd = Winner Player | Tie deriving (Eq, Show, Read)
+data GameEnd = Winner Player [WinningLine] | Tie deriving (Eq, Show, Read)
 
 data Quarto = Pass PassQuarto | Place PlaceQuarto | Final FinalQuarto
             deriving (Eq, Show, Read)
