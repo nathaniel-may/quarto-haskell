@@ -8,8 +8,9 @@ fromEither :: Either a a -> a
 fromEither (Left a)  = a
 fromEither (Right a) = a
 
-mapEither :: (a -> Either c b) -> [a] -> [b]
-mapEither f xs =
+-- mapRights
+mapRights :: (a -> Either c b) -> [a] -> [b]
+mapRights f xs =
   rights $ map f xs
   -- snd . partitionEithers $ map f xs
   -- [x | Right x <- f <$> xs]
@@ -18,7 +19,7 @@ mapEither f xs =
 enumerate :: (Enum a, Bounded a) => [a]
 enumerate = [minBound..maxBound]
 
-allUnique :: (Eq a) => [a] -> Bool
+allUnique :: Eq a => [a] -> Bool
 allUnique []     = True
 allUnique (x:xs) = x `notElem` xs && allUnique xs
 

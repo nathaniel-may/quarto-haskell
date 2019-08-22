@@ -41,14 +41,14 @@ takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
 
 finalExists :: (FinalQuarto -> Bool) -> Property
 finalExists f =
-  exists arbitrary (\case
+  exists arbitrary $ \case
     Final q -> f q
-    _       -> False)
+    _       -> False
 
 recognizesWin :: Line -> Property
-recognizesWin line = finalExists (\case
-  (FinalQuarto _ (Winner _ winLines)) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
-  (FinalQuarto _ Tie) -> False)
+recognizesWin line = finalExists $ \case
+  FinalQuarto _ (Winner _ winLines) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
+  FinalQuarto _ Tie -> False
 
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p

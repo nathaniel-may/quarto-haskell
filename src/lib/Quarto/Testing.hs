@@ -36,7 +36,7 @@ instance Arbitrary Quarto where
   shrink (Final (FinalQuarto b _)) = Pass . passQuarto <$> shrink b
   shrink (Pass  (PassQuarto  b))   = Pass . passQuarto <$> shrink b
   shrink (Place (PlaceQuarto b p)) =
-    mapEither (fmap Place . flip placeQuarto p) (shrink b)
+    mapRights (fmap Place . flip placeQuarto p) (shrink b)
       ++ shrink (Pass (passQuarto b))
 
 instance Arbitrary Board where

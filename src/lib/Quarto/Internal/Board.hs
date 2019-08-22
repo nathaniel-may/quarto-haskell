@@ -56,13 +56,10 @@ get b t = Map.lookup t $ tiles b
 -- TODO how many restrictions can I place here with LH? --
 place :: Board -> Tile -> Piece -> Either QuartoException Board
 place b t p
-  | b `contains` t
-    = Left TileOccupied
+  | b `contains` t       = Left TileOccupied
     -- this check could be deferred to the board but this exception is clearer for this function
-  | b `containsPiece` p
-    = Left PieceAlreadyPlaced
-  | otherwise
-    = board . Map.insert t p $ tiles b
+  | b `containsPiece` p  = Left PieceAlreadyPlaced
+  | otherwise            = board . Map.insert t p $ tiles b
 
 even :: Board -> Bool
 even = Prelude.even . size
