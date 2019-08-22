@@ -24,6 +24,7 @@ module Quarto.Game (
 
 import Prelude hiding (lines, even)
 import Data.Maybe
+import Data.List (intersect)
 import Data.List.NonEmpty (nonEmpty)
 import Data.Functor
 import Data.Bifunctor
@@ -104,7 +105,7 @@ lineTiles DiagonalBackward = zipWith Tile (reverse enumerate) enumerate
 
 winsForLine :: Board -> Line -> [WinningLine]
 winsForLine b line = fmap (WinningLine line)
-                   . concatMap (foldr1 same)
+                   . concatMap (foldr1 intersect)
                    . nonEmpty
                    . (\x -> if length x == 4 then x else [])
                    . mapMaybe (fmap attrs . get b) $ lineTiles line

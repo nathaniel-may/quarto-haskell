@@ -8,6 +8,7 @@
 module Quarto.Testing where
 
 import qualified Data.Map as Map
+import Data.Bifunctor (bimap, first)
 import Data.Either (fromRight)
 import Control.Exception (Exception, displayException)
 import Test.QuickCheck
@@ -101,8 +102,8 @@ newtype Turns = Turns { turns :: [Turn] }
 
 takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q
-takeTurn (PassTurn  pl p) (Pass q)  = mapLeft QuartoE $ Place <$> pass q pl p
-takeTurn (PlaceTurn pl t) (Place q) = mapLeft QuartoE $ fromEither . mapBoth Pass Final <$> Q.place q pl t
+takeTurn (PassTurn  pl p) (Pass q)  = first QuartoE $ Place <$> pass q pl p
+takeTurn (PlaceTurn pl t) (Place q) = first QuartoE $ fromEither . bimap Pass Final <$> Q.place q pl t
 takeTurn _ _                        = Left (TestE MismatchedTurn)
 
 takeTurns :: Turns -> Quarto
