@@ -1,6 +1,6 @@
 module Main where
 
-import Quarto.Game
+import Quarto
 
 main :: IO ()
 main = putStrLn "quarto under construction"

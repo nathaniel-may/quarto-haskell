@@ -1,10 +1,10 @@
-module Quarto.Internal.Board where
+module Quarto.Board where
 
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
 import Quarto.Internal.Types
-import Quarto.Internal.Lib
+import Quarto.Lib
 
 
 empty :: Board

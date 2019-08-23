@@ -9,13 +9,13 @@ import Data.Either
 import Data.Foldable
 import System.Exit
 
-import qualified Quarto.Game as Q
-import Quarto.Game
+import qualified Quarto as Q
+import Quarto
 import Quarto.Testing
 import Quarto.Internal.Types hiding (Property)
-import Quarto.Internal.Lib
-import qualified Quarto.Internal.Board as B
-import Quarto.Internal.Board
+import Quarto.Lib
+import qualified Quarto.Board as B
+import Quarto.Board
 
 -- Functions --
 

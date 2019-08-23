@@ -1,4 +1,4 @@
-module Quarto.Internal.Lib where
+module Quarto.Lib where
 
 import Data.Either (rights)
 import Data.Maybe (fromMaybe)

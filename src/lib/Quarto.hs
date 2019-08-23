@@ -1,4 +1,4 @@
-module Quarto.Game (
+module Quarto (
   -- TODO make this export list include all that my users need
   -- * constructors
     Quarto(..)
@@ -30,9 +30,9 @@ import Data.Functor
 import Data.Bifunctor
 
 import Quarto.Internal.Types
-import qualified Quarto.Internal.Board as B
-import Quarto.Internal.Board hiding (empty, place)
-import Quarto.Internal.Lib
+import qualified Quarto.Board as B
+import Quarto.Board hiding (empty, place)
+import Quarto.Lib
 
 
 -- not smart. used for consistency across Quarto types

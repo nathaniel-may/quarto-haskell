@@ -6,7 +6,7 @@ import Text.Read
 import Data.Map (Map, elems)
 import Control.Exception (Exception, displayException)
 
-import Quarto.Internal.Lib
+import Quarto.Lib
 
 -- Types and Instances --
 

@@ -13,11 +13,11 @@ import Data.Either (fromRight)
 import Control.Exception (Exception, displayException)
 import Test.QuickCheck
 
-import qualified Quarto.Game as Q
-import Quarto.Game
+import qualified Quarto as Q
+import Quarto
 import Quarto.Internal.Types
-import Quarto.Internal.Board
-import Quarto.Internal.Lib
+import Quarto.Board
+import Quarto.Lib
 
 
 -- QuickCheck instances

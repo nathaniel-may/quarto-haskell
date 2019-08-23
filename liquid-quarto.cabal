@@ -16,11 +16,11 @@ maintainer:          nathanieldmay@gmail.com
 category:            Game
 
 library
-  exposed-modules:     Quarto.Game
+  exposed-modules:     Quarto
                      , Quarto.Testing
+                     , Quarto.Board
                      , Quarto.Internal.Types
-                     , Quarto.Internal.Board
-                     , Quarto.Internal.Lib
+                     , Quarto.Lib
   -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*
