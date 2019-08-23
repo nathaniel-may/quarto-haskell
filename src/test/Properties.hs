@@ -50,6 +50,15 @@ recognizesWin line = finalExists $ \case
   FinalQuarto _ (Winner _ winLines) -> line `elem` ((\(WinningLine l _) -> l) <$> winLines)
   FinalQuarto _ Tie -> False
 
+allUniqueSlow :: Eq a => [a] -> Bool
+allUniqueSlow []     = True
+allUniqueSlow (x:xs) = x `notElem` xs && allUniqueSlow xs
+
+-- Properties --
+
+prop_allUniqueWorks :: (Ord a) => [a] -> Bool
+prop_allUniqueWorks as = allUnique as == allUniqueSlow as
+
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
   | b `contains` t || b `containsPiece` p
