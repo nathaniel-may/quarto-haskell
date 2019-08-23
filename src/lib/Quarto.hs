@@ -29,11 +29,13 @@ import Data.List.NonEmpty (nonEmpty)
 import Data.Functor
 import Data.Bifunctor
 
-import Quarto.Internal.Types
+import Quarto.Types.Internal
 import qualified Quarto.Board as B
 import Quarto.Board hiding (empty, place)
 import Quarto.Lib
 
+
+-- Smart Constructors --
 
 -- not smart. used for consistency across Quarto types
 passQuarto :: Board -> PassQuarto
@@ -55,6 +57,8 @@ finalQuarto b
   | otherwise
     = Left FinalQuartoMustBeCompleted
   where winLines = winningLines b
+
+-- Functions --
 
 empty :: Quarto
 empty = Pass $ passQuarto B.empty

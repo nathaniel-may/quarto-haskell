@@ -15,7 +15,7 @@ import Test.QuickCheck
 
 import qualified Quarto as Q
 import Quarto
-import Quarto.Internal.Types
+import Quarto.Types.Internal
 import Quarto.Board
 import Quarto.Lib
 

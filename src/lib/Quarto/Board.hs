@@ -3,7 +3,7 @@ module Quarto.Board where
 import qualified Data.Map as Map
 import Data.Maybe (Maybe)
 
-import Quarto.Internal.Types
+import Quarto.Types.Internal
 import Quarto.Lib
 
 

@@ -17,10 +17,11 @@ category:            Game
 
 library
   exposed-modules:     Quarto
-                     , Quarto.Testing
+                     , Quarto.Types
                      , Quarto.Board
-                     , Quarto.Internal.Types
                      , Quarto.Lib
+                     , Quarto.Testing
+                     , Quarto.Types.Internal
   -- other-modules:
   -- other-extensions:
   build-depends:       base ==4.12.*

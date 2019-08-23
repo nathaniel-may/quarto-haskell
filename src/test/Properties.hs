@@ -12,7 +12,7 @@ import System.Exit
 import qualified Quarto as Q
 import Quarto
 import Quarto.Testing
-import Quarto.Internal.Types hiding (Property)
+import Quarto.Types.Internal hiding (Property)
 import Quarto.Lib
 import qualified Quarto.Board as B
 import Quarto.Board

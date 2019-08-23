@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternSynonyms, LambdaCase #-}
 
-module Quarto.Internal.Types where
+module Quarto.Types.Internal where
 
 import Text.Read
 import Data.Map (Map, elems)
@@ -123,6 +123,7 @@ board m | allUnique (elems m)
           = Left BoardPiecesMustBeUnique
 
 -- Pattern Matching --
+
 pattern Board :: Map Tile Piece -> Board
 pattern Board m <- MkBoard m
 {-# COMPLETE Board #-}
