@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
 
 module Main (main) where
 
@@ -9,21 +9,40 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
-import System.Console.Byline
+import System.Console.Byline hiding (Menu)
 
 --------------------------------------------------------------------------------
 main :: IO ()
 main = void $ runByline $ do
 
   sayLn "Piece Menu: "
-  sayLn (drawMenu pieceMenu)
+  sayLn (style pieceMenu)
 
   let question = "choose a piece: "
   input <- ask question Nothing
 
   let choice = flip M.lookup pieceMenu =<< headMay input
-  sayLn $ maybe ("not a valid piece" <> fg red) draw choice
+  sayLn $ maybe ("not a valid piece" <> fg red) style choice
 --------------------------------------------------------------------------------
+
+class Style a where
+    style :: a -> Stylized
+
+instance Style Piece where
+    style (Piece c s h t) = color c (height h (shape s (top t))) where
+        color  White  = (<> fg red)
+        color  Black  = (<> fg blue <> bold)
+        height Tall   = (<> underline)
+        height Short  = id
+        shape  Square = ("[" <>) . (<> "]")
+        shape  Round  = ("(" <>) . (<> ")")
+        top    Flat   = " "
+        top    Hole   = stylize ('\9675' : "")
+
+instance Style (Map Char Piece) where
+    style m = pieces <> stylize "\n" <> indexes where
+        pieces  = foldr ((<>) . (<> " ")) "" (style <$> M.elems m)
+        indexes = stylize $ foldr ((<>) . (<> "  ") . (" " <>)) "" (showCharNoQuotes <$> M.keys m)
 
 stylize :: String -> Stylized
 stylize = text . T.pack
@@ -31,16 +50,10 @@ stylize = text . T.pack
 headMay :: Text -> Maybe Char
 headMay t = if T.null t then Nothing else Just (T.head t)
 
-draw :: Piece -> Stylized
-draw (Piece c s h t) = color c (height h (shape s (top t))) where
-    color  White  = (<> fg red)
-    color  Black  = (<> fg blue <> bold)
-    height Tall   = (<> underline)
-    height Short  = id
-    shape  Square = ("[" <>) . (<> "]")
-    shape  Round  = ("(" <>) . (<> ")")
-    top    Flat   = " "
-    top    Hole   = stylize ('\9675' : "")
+showCharNoQuotes :: Char -> String
+showCharNoQuotes = trim . show where
+    trim (_ : xs) = init xs
+    trim _        = undefined -- unreachable
 
 allPieces :: [Piece]
 allPieces = [
@@ -63,13 +76,3 @@ allPieces = [
 
 pieceMenu :: Map Char Piece
 pieceMenu = M.fromList $ (toEnum <$> [65..]) `zip` allPieces
-
-showCharNoQuotes :: Char -> String
-showCharNoQuotes = trim . show where
-    trim (_ : xs) = init xs
-    trim _        = undefined -- unreachable
-
-drawMenu :: Map Char Piece -> Stylized
-drawMenu m = pieces <> stylize "\n" <> indexes where
-    pieces  = foldr ((<>) . (<> " ")) "" (draw <$> M.elems m)
-    indexes = stylize $ foldr ((<>) . (<> "  ") . (" " <>)) "" (showCharNoQuotes <$> M.keys m)
