@@ -6,6 +6,11 @@ module Quarto (
   , GameEnd(..)
   , Line(..)
   , WinningLine(..)
+  , Piece(..)
+  , Color(..)
+  , Shape(..)
+  , Height(..)
+  , Top(..)
   -- * smart constructors
   , PassQuarto(PassQuarto),   passQuarto
   , PlaceQuarto(PlaceQuarto), placeQuarto
