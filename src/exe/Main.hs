@@ -4,21 +4,28 @@ module Main (main) where
 
 import Quarto
 
+
 import Control.Monad (void)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Maybe (fromMaybe)
 import System.Console.Byline hiding (Menu)
 
 --------------------------------------------------------------------------------
 main :: IO ()
 main = void $ runByline $ do
 
-  sayLn "Piece Menu: "
+  sayLn "Empty Game: "
+  sayLn (style Quarto.empty)
+
+--   sayLn "Non Empty Game: "
+--   sayLn (style Quarto.empty)
+
   sayLn (style pieceMenu)
 
-  let question = "choose a piece: "
+  let question = "pass a piece: "
   input <- ask question Nothing
 
   let choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
@@ -57,14 +64,20 @@ instance Style a => Style (Maybe a) where
 instance Style a => Style [a] where
     style xs = foldr ((<>) . (<> " ")) "" (style <$> xs)
 
--- instance Style Quarto where
---     style q = style <$> uncurry4 grid lines where
---         grid a b c d = (style <$> a) <> "\n" <> b <> "\n" <> c <> "\n" <> d
---         lines = flatten2x2 $ both halve (halve pieces)
---         pieces = ((flip getPiece) q) <$> allTiles
-
-uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
-uncurry4 f (w, x, y, z) = f w x y z
+instance Style Quarto where
+    style q = header <> hIndex <> grid lines <> passed q where
+        header = stylize $ "   :: Turn " <> show (piecesPlaced q) <> " ::\n"
+        hIndex = "   " <> (" A  B  C  D " <> underline) <> "\n"
+        grid (a, b, c, d) =
+               "1 |" <> rowTransform a <> "\n" 
+            <> "2 |" <> rowTransform b <> "\n" 
+            <> "3 |" <> rowTransform c <> "\n" 
+            <> "4 |" <> rowTransform d <> "\n"
+        rowTransform x = style $ maybe (stylize "   ") style <$> x
+        passed (Place (PlaceQuarto _ p)) = "To Place: " <> style p <> "\n"
+        passed _ = ""
+        lines = flatten2x2 $ both halve (halve pieces)
+        pieces = flip getPiece q <$> allTiles
 
 flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
 flatten2x2 ((w, x), (y, z)) = (w, x, y, z)
