@@ -33,14 +33,14 @@ headMay t = if T.null t then Nothing else Just (T.head t)
 
 draw :: Piece -> Stylized
 draw (Piece c s h t) = color c (height h (shape s (top t))) where
-    color  White  x = x <> fg red
-    color  Black  x = x <> fg blue <> bold
-    height Tall   x = x <> underline
-    height Short  x = x
-    shape  Square x = "[" <> x <> "]"
-    shape  Round  x = "(" <> x <> ")"
-    top    Flat     = " "
-    top    Hole     = stylize ('\9675' : "")
+    color  White  = (<> fg red)
+    color  Black  = (<> fg blue <> bold)
+    height Tall   = (<> underline)
+    height Short  = id
+    shape  Square = ("[" <>) . (<> "]")
+    shape  Round  = ("(" <>) . (<> ")")
+    top    Flat   = " "
+    top    Hole   = stylize ('\9675' : "")
 
 allPieces :: [Piece]
 allPieces = [
