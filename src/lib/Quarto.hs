@@ -18,12 +18,14 @@ module Quarto (
   -- * functions
   , allTiles
   , empty
+  , getPassedPiece
   , getPiece
   , turn
   , isTurn
   , getBoard
   , pass
   , place
+  , piecesPlaced
   , lines
   , lineTiles
   , winsForLine
@@ -79,12 +81,20 @@ isTurn :: Quarto -> Player -> Bool
 isTurn q pl = turn q == Right pl
 
 getBoard :: Quarto -> Board
-getBoard (Pass (PassQuarto  b))    = b
+getBoard (Pass ( PassQuarto  b))   = b
 getBoard (Place (PlaceQuarto b _)) = b
 getBoard (Final (FinalQuarto b _)) = b
 
-getPiece :: Quarto -> Tile -> Maybe Piece
-getPiece = get . getBoard
+piecesPlaced :: Quarto -> Int
+piecesPlaced = size . getBoard
+
+getPiece :: Tile -> Quarto -> Maybe Piece
+getPiece t q = get (getBoard q) t
+
+getPassedPiece :: Quarto -> Maybe Piece
+getPassedPiece (Pass  (PassQuarto  _))   = Nothing
+getPassedPiece (Place (PlaceQuarto _ p)) = Just p
+getPassedPiece (Final (FinalQuarto _ _)) = Nothing
 
 pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p
