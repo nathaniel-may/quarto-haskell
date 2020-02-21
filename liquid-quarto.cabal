@@ -38,8 +38,9 @@ library
 executable liquid-quarto
   main-is:          Main.hs
   build-depends:    base ==4.12.*
-                  , text ==1.2.*
                   , liquid-quarto
+                  , text ==1.2.*
+                  , containers ==0.6.*
                   , byline ==0.3.*
   hs-source-dirs:   src/exe
   default-language: Haskell2010
