@@ -18,14 +18,18 @@ main = void $ runByline $ do
   sayLn "Piece Menu: "
   sayLn (drawMenu pieceMenu)
 
---   let question = "What " <> ("piece" <> bold) <> " do you want to see? "
---   piece <- ask question Nothing
+  let question = "choose a piece: "
+  input <- ask question Nothing
 
---   sayLn $ maybe ("not a valid piece" <> bg red) draw (readPiece $ T.unpack piece)
+  let choice = flip M.lookup pieceMenu =<< headMay input
+  sayLn $ maybe ("not a valid piece" <> fg red) draw choice
 --------------------------------------------------------------------------------
 
 stylize :: String -> Stylized
 stylize = text . T.pack
+
+headMay :: Text -> Maybe Char
+headMay t = if T.null t then Nothing else Just (T.head t)
 
 draw :: Piece -> Stylized
 draw (Piece c s h t) = color c (height h (shape s (top t))) where
