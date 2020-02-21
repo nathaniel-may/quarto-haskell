@@ -28,6 +28,8 @@ library
                      , containers ==0.6.*
                      , text ==1.2.*
                      , QuickCheck ==2.12.*
+                     -- TODO remove byline. only for repl access.
+                     , byline ==0.3.* 
   ghc-options:         -Wall
                        -fno-warn-orphans
   hs-source-dirs:      src/lib
@@ -36,7 +38,9 @@ library
 executable liquid-quarto
   main-is:          Main.hs
   build-depends:    base ==4.12.*
+                  , text ==1.2.*
                   , liquid-quarto
+                  , byline ==0.3.*
   hs-source-dirs:   src/exe
   default-language: Haskell2010
 
