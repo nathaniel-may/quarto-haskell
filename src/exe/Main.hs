@@ -21,7 +21,7 @@ main = void $ runByline $ do
   let question = "choose a piece: "
   input <- ask question Nothing
 
-  let choice = flip M.lookup pieceMenu =<< headMay input
+  let choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
   sayLn $ maybe ("not a valid piece" <> fg red) style choice
 --------------------------------------------------------------------------------
 
