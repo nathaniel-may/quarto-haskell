@@ -28,6 +28,9 @@ main = void $ runByline $ do
 class Style a where
     style :: a -> Stylized
 
+instance Style Stylized where
+    style = id
+
 instance Style Piece where
     style (Piece c s h t) = color c (height h (shape s (top t))) where
         color  White  = (<> fg red)
@@ -41,8 +44,38 @@ instance Style Piece where
 
 instance Style (Map Char Piece) where
     style m = pieces <> stylize "\n" <> indexes where
-        pieces  = foldr ((<>) . (<> " ")) "" (style <$> M.elems m)
-        indexes = stylize $ foldr ((<>) . (<> "  ") . (" " <>)) "" (showCharNoQuotes <$> M.keys m)
+        pieces  = style (M.elems m)
+        indexes = stylize " " <> style ((<> " ") . style . showCharNoQuotes <$> M.keys m)
+
+instance Style Char where
+    style = stylize . showCharNoQuotes
+
+instance Style a => Style (Maybe a) where
+    style (Just a) = style a
+    style Nothing  = stylize ""
+
+instance Style a => Style [a] where
+    style xs = foldr ((<>) . (<> " ")) "" (style <$> xs)
+
+-- instance Style Quarto where
+--     style q = style <$> uncurry4 grid lines where
+--         grid a b c d = (style <$> a) <> "\n" <> b <> "\n" <> c <> "\n" <> d
+--         lines = flatten2x2 $ both halve (halve pieces)
+--         pieces = ((flip getPiece) q) <$> allTiles
+
+uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
+uncurry4 f (w, x, y, z) = f w x y z
+
+flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
+flatten2x2 ((w, x), (y, z)) = (w, x, y, z)
+
+both :: (a -> b) -> (a, a) -> (b, b)
+both f (x, y) = (f x, f y)
+
+halve :: [a] -> ([a], [a])
+halve [] = ([],[])
+halve xs = (take h xs, drop h xs) where
+  h = length xs `div` 2
 
 stylize :: String -> Stylized
 stylize = text . T.pack

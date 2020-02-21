@@ -16,7 +16,9 @@ module Quarto (
   , PlaceQuarto(PlaceQuarto), placeQuarto
   , FinalQuarto(FinalQuarto), finalQuarto
   -- * functions
+  , allTiles
   , empty
+  , getPiece
   , turn
   , isTurn
   , getBoard
@@ -80,6 +82,9 @@ getBoard :: Quarto -> Board
 getBoard (Pass (PassQuarto  b))    = b
 getBoard (Place (PlaceQuarto b _)) = b
 getBoard (Final (FinalQuarto b _)) = b
+
+getPiece :: Quarto -> Tile -> Maybe Piece
+getPiece = get . getBoard
 
 pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p
