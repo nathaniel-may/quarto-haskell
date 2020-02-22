@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings, FlexibleInstances, LambdaCase #-}
 
 module Main (main) where
 
 import Quarto
-
+import qualified Quarto as Q
 
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans.Maybe (MaybeT(..))
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
@@ -17,12 +19,13 @@ import System.Console.Byline hiding (Menu)
 main :: IO ()
 main = void $ runByline $ do
 
-  sayLn "Empty Game: "
-  sayLn (style Quarto.empty)
+  let game = Q.empty
+  sayLn "::::  Let's Play Quarto!  ::::\n"
 
---   sayLn "Non Empty Game: "
---   sayLn (style Quarto.empty)
+  let player = case Q.turn game of Left _  -> undefined --game is over
+                                   Right p -> undefined
 
+  sayLn (style game)
   sayLn (style pieceMenu)
 
   let question = "pass a piece: "
@@ -31,6 +34,41 @@ main = void $ runByline $ do
   let choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
   sayLn $ maybe ("not a valid piece" <> fg red) style choice
 --------------------------------------------------------------------------------
+
+-- Returns `Nothing` when the game is over
+keepPlaying :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
+keepPlaying q = do
+    player <- hoistMaybe $ case Q.turn q 
+        of Left  _ -> Nothing --game is over
+           Right p -> Just p
+    stage <- case q
+        of Final _  -> hoistMaybe Nothing
+           Pass  q' -> passTurn
+           Place _  -> undefined
+    return
+    -- TODO unfinished
+
+passTurn :: MonadIO m => Player -> Piece -> PassQuarto -> Byline m Quarto
+passTurn player piece q = (\case 
+    Left e   -> sayLn (show e) *> askForPiece
+    Right q' -> pure q') =<< (pass q player <$> askForPiece player)
+    where askForPiece player = pieceFromInput <$> ask (show player <> " pass a piece: ") Nothing
+
+pieceFromInput :: Stylized -> Maybe Piece
+pieceFromInput s = maybe ("not a valid piece" <> fg red) style choice where
+    choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
+
+-- | Lift a 'Maybe' to the 'MaybeT' monad
+hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
+hoistMaybe = MaybeT . return
+
+-- | Case analysis for MaybeT
+maybeT :: Monad m => m b -> (a -> m b) -> MaybeT m a -> m b
+maybeT mb kb (MaybeT ma) = maybe mb kb =<< ma
+
+repeatM :: Monad m => (a -> MaybeT m a) -> a -> m a
+repeatM f = g
+     where g x = maybeT (pure x) g (f x)
 
 class Style a where
     style :: a -> Stylized
@@ -69,9 +107,9 @@ instance Style Quarto where
         header = stylize $ "   :: Turn " <> show (piecesPlaced q) <> " ::\n"
         hIndex = "   " <> (" A  B  C  D " <> underline) <> "\n"
         grid (a, b, c, d) =
-               "1 |" <> rowTransform a <> "\n" 
-            <> "2 |" <> rowTransform b <> "\n" 
-            <> "3 |" <> rowTransform c <> "\n" 
+               "1 |" <> rowTransform a <> "\n"
+            <> "2 |" <> rowTransform b <> "\n"
+            <> "3 |" <> rowTransform c <> "\n"
             <> "4 |" <> rowTransform d <> "\n"
         rowTransform x = style $ maybe (stylize "   ") style <$> x
         passed (Place (PlaceQuarto _ p)) = "To Place: " <> style p <> "\n"
