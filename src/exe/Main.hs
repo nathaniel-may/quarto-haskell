@@ -43,20 +43,25 @@ keepPlaying q = do
            Right p -> Just p
     stage <- case q
         of Final _  -> hoistMaybe Nothing
-           Pass  q' -> passTurn
+           Pass  q' -> lift (passTurn player q')
            Place _  -> undefined
     return
     -- TODO unfinished
 
-passTurn :: MonadIO m => Player -> Piece -> PassQuarto -> Byline m Quarto
-passTurn player piece q = (\case 
-    Left e   -> sayLn (show e) *> askForPiece
-    Right q' -> pure q') =<< (pass q player <$> askForPiece player)
-    where askForPiece player = pieceFromInput <$> ask (show player <> " pass a piece: ") Nothing
+passTurn :: MonadIO m => Player -> PassQuarto -> Byline m Quarto
+passTurn player q = (\case 
+    Left e   -> sayLn (style $ show e) *> askForPiece player
+    Right q' -> pure q') =<< (pass q player <$> askForPiece)
 
-pieceFromInput :: Stylized -> Maybe Piece
-pieceFromInput s = maybe ("not a valid piece" <> fg red) style choice where
-    choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
+askForPiece :: MonadIO m => Byline m Piece
+askForPiece = do
+    index  <- askUser
+    mPiece <- maybe askIfInvalid (pure . Just) (lookup index)
+    maybe askForPiece pure mPiece
+    where
+        lookup s = flip M.lookup pieceMenu =<< headMay (T.toUpper s)
+        askUser = ask "pass a piece: " Nothing
+        askIfInvalid = lookup <$> (sayLn ("not a valid piece" <> fg red) *> askUser)
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
