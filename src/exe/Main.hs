@@ -11,6 +11,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Data.Bifunctor (bimap)
+import Data.Functor (($>))
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
@@ -23,38 +24,33 @@ main :: IO ()
 main = void $ runByline $ do
 
   let game = Q.empty
-  sayLn "::::  Let's Play Quarto!  ::::\n"
+  sayLn "::::  Let's Play Quarto!  ::::"
 
-  let player = case Q.turn game of Left _  -> undefined --game is over
-                                   Right p -> undefined
+  -- TODO diagonal wins by color aren't being caught as wins
+  endGame <- repeatM play game
 
-  sayLn (style game)
-  sayLn (style pieceMenu)
-
-  let question = "pass a piece: "
-  input <- ask question Nothing
-
-  let choice = flip M.lookup pieceMenu =<< headMay (T.toUpper input)
-  sayLn $ maybe ("not a valid piece" <> fg red) style choice
+  -- TODO print better winner sequence
+  sayLn "Game Over"
 --------------------------------------------------------------------------------
 
 -- Returns `Nothing` when the game is over
-keepPlaying :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
-keepPlaying q = do
+play :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
+play q = do
+    lift (sayLn "")
+    lift (sayLn $ style q) -- print the game
     player <- hoistMaybe $ case Q.turn q 
-        of Left  _ -> Nothing --game is over
+        of Left  _ -> Nothing -- game is over
            Right p -> Just p
     game <- case q
-        of Final _                        -> hoistMaybe Nothing -- TODO print winner sequence
+        of Final q'                       -> hoistMaybe Nothing -- game is over
            Pass  q'                       -> lift $ Place <$> passTurn player q'
            Place q'@(PlaceQuarto _ piece) -> lift (placeTurn player piece q')
-    keepPlaying game
-    -- TODO unfinished
+    play game
 
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
 passTurn player q = (\case 
     Left e   -> sayLn (style $ show e) *> passTurn player q
-    Right q' -> pure q') =<< (pass q player <$> askForPiece)
+    Right q' -> pure q') =<< (pass q player <$> (sayLn (style pieceMenu) *> askForPiece))
 
 placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
 placeTurn player piece q = (\case 
@@ -79,7 +75,7 @@ askForTile piece = do
     mTile <- maybe askIfInvalid (pure . Just) (validateTile hv)
     maybe (askForTile piece) pure mTile
     where
-        askUser = ask ("where will you place " <> style piece <> " ?:") Nothing
+        askUser = ask ("where will you place " <> style piece <> "?: ") Nothing
         askIfInvalid = validateTile <$> (sayLn ("not a valid tile" <> fg red) *> askUser)
 
 validateTile :: Text -> Maybe Tile
@@ -87,6 +83,9 @@ validateTile t = if 2 /= T.length t
     then Nothing 
     else toTile t <|> toTile (T.reverse t)
     where toTile t' = fmap (uncurry Tile) (zipR . bimap hFromChar vFromChar =<< firstTwo t')
+
+availablePieceMenu :: Quarto -> Map Char Piece
+availablePieceMenu = undefined --TODO use M.delete
 
 zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
 zipR (Just a, Just b) = Just (a, b)
@@ -108,7 +107,6 @@ vFromChar '2' = Just V2
 vFromChar '3' = Just V3
 vFromChar '4' = Just V4
 vFromChar _   = Nothing
-
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
@@ -139,6 +137,9 @@ instance Style Piece where
         top    Flat   = " "
         top    Hole   = stylize ('\9675' : "")
 
+instance Style Player where
+    style = stylize . show
+
 instance Style (Map Char Piece) where
     style m = pieces <> stylize "\n" <> indexes where
         pieces  = style (M.elems m)
@@ -156,8 +157,8 @@ instance Style a => Style [a] where
 
 instance Style Quarto where
     style q = header <> hIndex <> grid lines <> passed q where
-        header = stylize $ "   :: Turn " <> show (piecesPlaced q) <> " ::\n"
-        hIndex = "   " <> (" 1  2  3  4 " <> underline) <> "\n"
+        header = "   :: " <> headerText <> " ::\n"
+        hIndex = "   " <> (" 1   2   3   4 " <> underline) <> "\n"
         grid (a, b, c, d) =
                "A |" <> rowTransform a <> "\n"
             <> "B |" <> rowTransform b <> "\n"
@@ -168,6 +169,12 @@ instance Style Quarto where
         passed _ = ""
         lines = flatten2x2 $ both halve (halve pieces)
         pieces = flip getPiece q <$> allTiles
+        headerText = fromMaybe "" $ 
+            winOrTie <|> fmap ((<> " Turn " <> stylize (show (piecesPlaced q))) . style) (eitherToMaybe $ Q.turn q)
+        winOrTie = case q of
+            Final (FinalQuarto _ Tie) -> Just "Tie Game!"
+            Final (FinalQuarto _ (Winner p _)) -> Just (style p <> " Wins!")
+            _ -> Nothing
 
 flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
 flatten2x2 ((w, x), (y, z)) = (w, x, y, z)
@@ -180,6 +187,10 @@ halve [] = ([],[])
 halve xs = (take h xs, drop h xs) where
   h = length xs `div` 2
 
+eitherToMaybe :: Either a b -> Maybe b
+eitherToMaybe (Right x) = Just x
+eitherToMaybe _         = Nothing
+
 stylize :: String -> Stylized
 stylize = text . T.pack
 
@@ -190,25 +201,6 @@ showCharNoQuotes :: Char -> String
 showCharNoQuotes = trim . show where
     trim (_ : xs) = init xs
     trim _        = undefined -- unreachable
-
-allPieces :: [Piece]
-allPieces = [
-   Piece White Square Short Hole
-  ,Piece White Square Short Flat
-  ,Piece White Square Tall  Hole
-  ,Piece White Square Tall  Flat
-  ,Piece White Round  Short Hole
-  ,Piece White Round  Short Flat
-  ,Piece White Round  Tall  Hole
-  ,Piece White Round  Tall  Flat
-  ,Piece Black Square Short Hole
-  ,Piece Black Square Short Flat
-  ,Piece Black Square Tall  Hole
-  ,Piece Black Square Tall  Flat
-  ,Piece Black Round  Short Hole
-  ,Piece Black Round  Short Flat
-  ,Piece Black Round  Tall  Hole
-  ,Piece Black Round  Tall  Flat]
 
 pieceMenu :: Map Char Piece
 pieceMenu = M.fromList $ (toEnum <$> [65..]) `zip` allPieces
