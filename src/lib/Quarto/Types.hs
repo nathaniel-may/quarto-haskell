@@ -6,13 +6,3 @@ import Quarto.Types.Internal as SafeTypes hiding (
   , MkPassQuarto
   , MkPlaceQuarto
   , MkFinalQuarto)
-
-
-
---module Quarto.Types where (
---    Color(..)
---  , Shape(..)
---  , Height(..)
---  , Top(..)
---  ,
---  )
