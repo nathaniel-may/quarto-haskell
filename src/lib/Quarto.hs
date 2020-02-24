@@ -11,6 +11,9 @@ module Quarto (
   , Shape(..)
   , Height(..)
   , Top(..)
+  , Tile(..)
+  , HIndex(..)
+  , VIndex(..)
   -- * smart constructors
   , PassQuarto(PassQuarto),   passQuarto
   , PlaceQuarto(PlaceQuarto), placeQuarto
