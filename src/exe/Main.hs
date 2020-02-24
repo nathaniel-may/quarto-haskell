@@ -5,9 +5,12 @@ module Main (main) where
 import Quarto
 import qualified Quarto as Q
 
+import Control.Applicative ((<|>))
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..))
+import Data.Bifunctor (bimap)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
@@ -41,17 +44,24 @@ keepPlaying q = do
     player <- hoistMaybe $ case Q.turn q 
         of Left  _ -> Nothing --game is over
            Right p -> Just p
-    stage <- case q
-        of Final _  -> hoistMaybe Nothing
-           Pass  q' -> lift (passTurn player q')
-           Place _  -> undefined
-    return
+    game <- case q
+        of Final _                        -> hoistMaybe Nothing -- TODO print winner sequence
+           Pass  q'                       -> lift $ Place <$> passTurn player q'
+           Place q'@(PlaceQuarto _ piece) -> lift (placeTurn player piece q')
+    keepPlaying game
     -- TODO unfinished
 
-passTurn :: MonadIO m => Player -> PassQuarto -> Byline m Quarto
+passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
 passTurn player q = (\case 
-    Left e   -> sayLn (style $ show e) *> askForPiece player
+    Left e   -> sayLn (style $ show e) *> passTurn player q
     Right q' -> pure q') =<< (pass q player <$> askForPiece)
+
+placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
+placeTurn player piece q = (\case 
+    Left e   -> sayLn (style $ show e) *> placeTurn player piece q
+    Right q' -> pure (convert q')) =<< (place q player <$> askForTile piece)
+    where convert (Left  a) = Pass  a
+          convert (Right a) = Final a
 
 askForPiece :: MonadIO m => Byline m Piece
 askForPiece = do
@@ -62,6 +72,43 @@ askForPiece = do
         lookup s = flip M.lookup pieceMenu =<< headMay (T.toUpper s)
         askUser = ask "pass a piece: " Nothing
         askIfInvalid = lookup <$> (sayLn ("not a valid piece" <> fg red) *> askUser)
+
+askForTile :: MonadIO m => Piece -> Byline m Tile
+askForTile piece = do
+    hv    <- askUser
+    mTile <- maybe askIfInvalid (pure . Just) (validateTile hv)
+    maybe (askForTile piece) pure mTile
+    where
+        askUser = ask ("where will you place " <> style piece <> " ?:") Nothing
+        askIfInvalid = validateTile <$> (sayLn ("not a valid tile" <> fg red) *> askUser)
+
+validateTile :: Text -> Maybe Tile
+validateTile t = if 2 /= T.length t
+    then Nothing 
+    else toTile t <|> toTile (T.reverse t)
+    where toTile t' = fmap (uncurry Tile) (zipR . bimap hFromChar vFromChar =<< firstTwo t')
+
+zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
+zipR (Just a, Just b) = Just (a, b)
+zipR _                = Nothing
+
+firstTwo :: Text -> Maybe (Char, Char)
+firstTwo t = zipR (headMay t, headMay (T.drop 1 t))
+
+hFromChar :: Char -> Maybe HIndex
+hFromChar 'A' = Just HA
+hFromChar 'B' = Just HB
+hFromChar 'C' = Just HC
+hFromChar 'D' = Just HD
+hFromChar _   = Nothing
+
+vFromChar :: Char -> Maybe VIndex
+vFromChar '1' = Just V1
+vFromChar '2' = Just V2
+vFromChar '3' = Just V3
+vFromChar '4' = Just V4
+vFromChar _   = Nothing
+
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
@@ -110,12 +157,12 @@ instance Style a => Style [a] where
 instance Style Quarto where
     style q = header <> hIndex <> grid lines <> passed q where
         header = stylize $ "   :: Turn " <> show (piecesPlaced q) <> " ::\n"
-        hIndex = "   " <> (" A  B  C  D " <> underline) <> "\n"
+        hIndex = "   " <> (" 1  2  3  4 " <> underline) <> "\n"
         grid (a, b, c, d) =
-               "1 |" <> rowTransform a <> "\n"
-            <> "2 |" <> rowTransform b <> "\n"
-            <> "3 |" <> rowTransform c <> "\n"
-            <> "4 |" <> rowTransform d <> "\n"
+               "A |" <> rowTransform a <> "\n"
+            <> "B |" <> rowTransform b <> "\n"
+            <> "C |" <> rowTransform c <> "\n"
+            <> "D |" <> rowTransform d <> "\n"
         rowTransform x = style $ maybe (stylize "   ") style <$> x
         passed (Place (PlaceQuarto _ p)) = "To Place: " <> style p <> "\n"
         passed _ = ""
