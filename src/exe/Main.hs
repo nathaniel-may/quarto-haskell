@@ -81,8 +81,9 @@ askForTile piece = do
 validateTile :: Text -> Maybe Tile
 validateTile t = if 2 /= T.length t
     then Nothing 
-    else toTile t <|> toTile (T.reverse t)
+    else toTile tCap <|> toTile (T.reverse tCap)
     where toTile t' = fmap (uncurry Tile) (zipR . bimap hFromChar vFromChar =<< firstTwo t')
+          tCap = T.toUpper t
 
 availablePieceMenu :: Quarto -> Map Char Piece
 availablePieceMenu = undefined --TODO use M.delete
