@@ -19,7 +19,9 @@ module Quarto (
   , PlaceQuarto(PlaceQuarto), placeQuarto
   , FinalQuarto(FinalQuarto), finalQuarto
   -- * functions
+  , allPieces
   , allTiles
+  , containsPiece
   , empty
   , getPassedPiece
   , getPiece
@@ -43,7 +45,7 @@ import Data.Bifunctor
 
 import Quarto.Types.Internal
 import qualified Quarto.Board as B
-import Quarto.Board hiding (empty, place)
+import Quarto.Board hiding (empty, place, containsPiece)
 import Quarto.Lib
 
 
@@ -55,7 +57,7 @@ passQuarto = MkPassQuarto
 
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
-  | b `containsPiece` p
+  | b `B.containsPiece` p
     = Left PieceAlreadyOnBoard
   | otherwise
     = Right (MkPlaceQuarto b p)
@@ -99,11 +101,17 @@ getPassedPiece (Pass  (PassQuarto  _))   = Nothing
 getPassedPiece (Place (PlaceQuarto _ p)) = Just p
 getPassedPiece (Final (FinalQuarto _ _)) = Nothing
 
+containsPiece :: Piece -> Quarto -> Bool
+containsPiece p q = not (B.containsPiece (getBoard q) p) && (p `elem` maybeToList (getPassedPiece q))
+
+availablePieces :: Quarto -> [Piece]
+availablePieces q = [x | x <- allPieces, not (containsPiece x q)]
+
 pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p
   | not $ isTurn (Pass q) pl
     = Left CannotPassOffTurn
-  | b `containsPiece` p
+  | b `B.containsPiece` p
     = Left CannotPassPlacedPiece
   | otherwise
     = placeQuarto b p
