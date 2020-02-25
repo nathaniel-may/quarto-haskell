@@ -1,3 +1,4 @@
+{-# Language LambdaCase #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module  :  Quarto.Testing
@@ -26,8 +27,7 @@ instance Arbitrary Player where
   shrink    = shrinkBoundedEnum
 
 instance Arbitrary Turns where
-  arbitrary = fmap Turns (take <$> someTurns <*> (concatMap mkTurns <$> (zip players <$> placements)))
-    where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
+  arbitrary = someTurns
   shrink (Turns []) = []
   shrink (Turns ts) = [Turns (init ts)]
 
@@ -99,8 +99,18 @@ newtype Turns = Turns { turns :: [Turn] }
 
 -- Functions
 
-someTurns :: Gen Int
-someTurns = elements [0..16]
+allTurns :: Gen Turns
+allTurns = Turns . concatMap mkTurns <$> (zip players <$> placements)
+    where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
+
+someTurns :: Gen Turns
+someTurns = Turns <$> (take <$> elements [0..16] <*> (turns <$> allTurns))
+
+arbFinalGame :: Gen FinalQuarto
+arbFinalGame = toFinal . takeTurns <$> allTurns where
+  toFinal = \case
+    Final q -> q
+    _       -> error "game with all pieces wasn't over" -- unreachable
 
 takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q

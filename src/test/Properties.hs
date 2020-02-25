@@ -40,10 +40,7 @@ takeTurnsWithErrors :: Turns -> Either QuartoTestException Quarto
 takeTurnsWithErrors ts = foldlM (flip takeTurn) Q.empty (turns ts)
 
 finalExists :: (FinalQuarto -> Bool) -> Property
-finalExists f =
-  exists arbitrary $ \case
-    Final q -> f q
-    _       -> False
+finalExists = exists arbFinalGame
 
 recognizesWin :: Line -> Property
 recognizesWin line = finalExists $ \case
