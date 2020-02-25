@@ -107,11 +107,8 @@ prop_recognizesTie = exists arbitrary (\case
                                           _ -> False)
 
 prop_recognizesAllWinLines :: Property
-prop_recognizesAllWinLines = conjoin $ recognizesWin
-                          <$> DiagonalBackward
-                          : DiagonalForward
-                          : (Horizontal <$> enumerate)
-                          <> (Vertical <$> enumerate)
+prop_recognizesAllWinLines = conjoin $ recognizesWin <$> 
+  [DiagonalBackward, DiagonalForward] <> (Horizontal <$> enumerate) <> (Vertical <$> enumerate)
 
 prop_recognizesMultiLineWin :: Property
 prop_recognizesMultiLineWin = finalExists (\case
@@ -142,7 +139,7 @@ prop_availablePieces q@(Final _) =
 prop_availablePieces q@(Pass (PassQuarto b)) = 
   (16 - B.size b) == length (availablePieces q)
 prop_availablePieces q@(Place (PlaceQuarto b _)) = 
-  1000 == length (availablePieces q)
+  (15 - B.size b) == length (availablePieces q)
 
 pure []
 
