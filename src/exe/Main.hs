@@ -48,17 +48,15 @@ play game = do
     lift $ sayLn ""
     lift $ sayLn (style game)
 
-    lift $ sayLn "vvv DEBUG vvv"
-    lift $ sayLn (stylize $ show game)
-    lift $ sayLn "^^^ DEBUG ^^^"
-
     player <- hoistMaybe $ case Q.turn game 
         of Left  _ -> Nothing -- game is over
            Right p -> Just p
+
     game' <- case game
         of Final q                       -> hoistMaybe Nothing -- game is over
            Pass  q                       -> lift $ Place <$> passTurn player q
            Place q@(PlaceQuarto _ piece) -> lift (placeTurn player piece q)
+           
     play game'
 
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
