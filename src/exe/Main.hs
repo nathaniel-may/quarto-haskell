@@ -149,10 +149,6 @@ instance Style (Map Char Piece) where
 instance Style Char where
     style = stylize . showCharNoQuotes
 
-instance Style a => Style (Maybe a) where
-    style (Just a) = style a
-    style Nothing  = stylize ""
-
 instance Style a => Style [a] where
     style xs = foldr ((<>) . (<> " ")) "" (style <$> xs)
 
