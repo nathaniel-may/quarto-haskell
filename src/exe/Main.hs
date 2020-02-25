@@ -17,14 +17,14 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Maybe (fromMaybe)
-import System.Console.Byline hiding (Menu)
+import System.Console.Byline hiding (banner, Menu)
 
 --------------------------------------------------------------------------------
 main :: IO ()
 main = void $ runByline $ do
 
   let game = Q.empty
-  sayLn "::::  Let's Play Quarto!  ::::"
+  sayLn banner
 
   -- TODO diagonal wins by color aren't being caught as wins
   endGame <- repeatM play game
@@ -33,19 +33,27 @@ main = void $ runByline $ do
   sayLn "Game Over"
 --------------------------------------------------------------------------------
 
--- Returns `Nothing` when the game is over
+banner :: Stylized
+banner = (fg blue <>) . (bold <>) $ stylize $ unlines [
+    "  ____                   _"
+  , " / __ \\                 | |"
+  , "| |  | |_   _  __ _ _ __| |_ ___"
+  , "| |  | | | | |/ _` | '__| __/ _ \\"
+  , "| |__| | |_| | (_| | |  | || (_) |"
+  , " \\___\\_\\\\__,_|\\__,_|_|   \\__\\___/"]
+
 play :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
-play q = do
-    lift (sayLn "")
-    lift (sayLn $ style q) -- print the game
-    player <- hoistMaybe $ case Q.turn q 
+play game = do
+    lift $ sayLn ""
+    lift $ sayLn (style game)
+    player <- hoistMaybe $ case Q.turn game 
         of Left  _ -> Nothing -- game is over
            Right p -> Just p
-    game <- case q
-        of Final q'                       -> hoistMaybe Nothing -- game is over
-           Pass  q'                       -> lift $ Place <$> passTurn player q'
-           Place q'@(PlaceQuarto _ piece) -> lift (placeTurn player piece q')
-    play game
+    game' <- case game
+        of Final q                       -> hoistMaybe Nothing -- game is over
+           Pass  q                       -> lift $ Place <$> passTurn player q
+           Place q@(PlaceQuarto _ piece) -> lift (placeTurn player piece q)
+    play game'
 
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
 passTurn player q = (\case 
@@ -55,7 +63,8 @@ passTurn player q = (\case
 placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
 placeTurn player piece q = (\case 
     Left e   -> sayLn (style $ show e) *> placeTurn player piece q
-    Right q' -> pure (convert q')) =<< (place q player <$> askForTile piece)
+    Right q' -> pure (convert q')) =<< (place 
+    q player <$> askForTile piece)
     where convert (Left  a) = Pass  a
           convert (Right a) = Final a
 
