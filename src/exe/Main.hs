@@ -11,10 +11,9 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Data.Bifunctor (bimap)
+import qualified Data.Bimap as BM
 import Data.Bimap (Bimap)
 import Data.Functor (($>))
-import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -74,7 +73,7 @@ askForPiece q = do
     mPiece <- maybe askIfInvalid (pure . Just) (lookup index)
     maybe (sayNotValid *> askForPiece q) pure mPiece
     where
-        lookup s = flip M.lookup (availablePieceMenu (Pass q)) =<< headMay (T.toUpper s)
+        lookup s = flip BM.lookup (availablePieceMenu (Pass q)) =<< headMay (T.toUpper s)
         askUser = ask "pass a piece: " Nothing
         askIfInvalid = lookup <$> (sayNotValid *> askUser)
         sayNotValid = sayLn ("not a valid piece" <> fg red)
@@ -96,12 +95,11 @@ validateTile t = if 2 /= T.length t
     where toTile t' = fmap (uncurry Tile) (zipR . bimap hFromChar vFromChar =<< firstTwo t')
           tCap = T.toUpper t
 
-availablePieceMenu :: Quarto -> Map Char Piece
-availablePieceMenu q = invertMap $ foldr M.delete (invertMap pieceMenu) (unavailablePieces q)
+availablePieceMenu :: Quarto -> Bimap Char Piece
+availablePieceMenu q = invertMap $ foldr BM.delete (invertMap pieceMenu) (unavailablePieces q)
 
--- potentially lossy. TODO replace with BiMap
-invertMap :: (Ord k, Ord v) => Map k v -> Map v k    
-invertMap = M.fromList . fmap swap . M.toList
+invertMap :: (Ord k, Ord v) => Bimap k v -> Bimap v k    
+invertMap = BM.fromList . fmap swap . BM.toList
 
 zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
 zipR (Just a, Just b) = Just (a, b)
@@ -156,10 +154,10 @@ instance Style Piece where
 instance Style Player where
     style = stylize . show
 
-instance Style (Map Char Piece) where
+instance Style (Bimap Char Piece) where
     style m = pieces <> stylize "\n" <> indexes where
-        pieces  = style (M.elems m)
-        indexes = stylize " " <> style ((<> " ") . style . showCharNoQuotes <$> M.keys m)
+        pieces  = style (BM.elems m)
+        indexes = stylize " " <> style ((<> " ") . style . showCharNoQuotes <$> BM.keys m)
 
 instance Style Char where
     style = stylize . showCharNoQuotes
@@ -219,5 +217,5 @@ showCharNoQuotes = trim . show where
     trim (_ : xs) = init xs
     trim _        = undefined -- unreachable
 
-pieceMenu :: Map Char Piece
-pieceMenu = M.fromList $ (toEnum <$> [65..]) `zip` allPieces
+pieceMenu :: Bimap Char Piece
+pieceMenu = BM.fromList $ (toEnum <$> [65..]) `zip` allPieces
