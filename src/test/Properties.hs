@@ -99,9 +99,9 @@ prop_finalGamesAlwaysHaveAtLeast4Pieces (Final (FinalQuarto b _)) = size b >= 4
 prop_finalGamesAlwaysHaveAtLeast4Pieces _                         = True
 
 prop_recognizesTie :: Property
-prop_recognizesTie = exists arbitrary (\case
-                                          Final (FinalQuarto _ Tie) -> True
-                                          _ -> False)
+prop_recognizesTie = finalExists (\case
+                                    (FinalQuarto _ Tie) -> True
+                                    _ -> False)
 
 prop_recognizesAllWinLines :: Property
 prop_recognizesAllWinLines = conjoin $ recognizesWin <$> 
