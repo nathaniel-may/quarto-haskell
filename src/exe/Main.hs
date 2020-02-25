@@ -5,6 +5,7 @@ module Main (main) where
 import Prelude hiding (lookup, lines)
 
 import Control.Applicative ((<|>))
+import Control.Exception (displayException)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans (lift)
@@ -62,7 +63,7 @@ passTurn player q = (\case
 
 placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
 placeTurn player piece q = (\case 
-    Left e   -> sayLn (style $ show e) *> placeTurn player piece q
+    Left e   -> sayLn (style $ displayException e) *> placeTurn player piece q
     Right q' -> pure (convert q')) =<< (place 
     q player <$> askForTile piece)
     where convert (Left  a) = Pass  a
