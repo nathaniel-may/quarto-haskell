@@ -24,13 +24,9 @@ import System.Console.Byline hiding (banner, Menu)
 --------------------------------------------------------------------------------
 main :: IO ()
 main = void $ runByline $ do
-
   let game = Q.empty
   sayLn banner
-
-  -- TODO diagonal wins by color aren't being caught as wins
   endGame <- repeatM play game
-
   sayLn ":::::: Thanks for playing! ::::::"
 --------------------------------------------------------------------------------
 
@@ -56,7 +52,7 @@ play game = do
         of Final q                       -> hoistMaybe Nothing -- game is over
            Pass  q                       -> lift $ Place <$> passTurn player q
            Place q@(PlaceQuarto _ piece) -> lift (placeTurn player piece q)
-           
+
     play game'
 
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
