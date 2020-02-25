@@ -61,7 +61,7 @@ prop_allUniqueWorks as = allUnique as == allUniqueSlow as
 
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
-  | b `contains` t || b `containsPiece` p
+  | b `B.contains` t || b `B.containsPiece` p
     = isLeft $ B.place b t p
   | otherwise
     = B.place b t p == (board . Map.insert t p $ tiles b)
@@ -71,7 +71,7 @@ prop_boardContains b t =
   (not . null . Map.lookup t $ tiles b) `iff` (b `contains` t)
 
 prop_boardContainsPiece :: Board -> Piece -> Bool
-prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `containsPiece` p)
+prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `B.containsPiece` p)
 
 prop_fullBoard :: Board -> Bool
 prop_fullBoard b = length (tiles b) == 16 `iff` full b
