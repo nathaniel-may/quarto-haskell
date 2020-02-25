@@ -2,8 +2,7 @@
 
 module Main (main) where
 
-import Quarto
-import qualified Quarto as Q
+import Prelude hiding (lookup, lines)
 
 import Control.Applicative ((<|>))
 import Control.Monad (void)
@@ -13,19 +12,21 @@ import Control.Monad.Trans.Maybe (MaybeT(..))
 import Data.Bifunctor (bimap)
 import qualified Data.Bimap as BM
 import Data.Bimap (Bimap)
-import Data.Functor (($>))
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Tuple (swap)
 import System.Console.Byline hiding (banner, Menu)
 
+import qualified Quarto as Q
+import Quarto hiding (lines)
+
 --------------------------------------------------------------------------------
 main :: IO ()
 main = void $ runByline $ do
   let game = Q.empty
   sayLn banner
-  endGame <- repeatM play game
+  _ <- repeatM play game
   sayLn ":::::: Thanks for playing! ::::::"
 --------------------------------------------------------------------------------
 
@@ -48,7 +49,7 @@ play game = do
            Right p -> Just p
 
     game' <- case game
-        of Final q                       -> hoistMaybe Nothing -- game is over
+        of Final _                       -> hoistMaybe Nothing -- game is over
            Pass  q                       -> lift $ Place <$> passTurn player q
            Place q@(PlaceQuarto _ piece) -> lift (placeTurn player piece q)
 
