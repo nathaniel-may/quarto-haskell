@@ -11,12 +11,14 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Data.Bifunctor (bimap)
+import Data.Bimap (Bimap)
 import Data.Functor (($>))
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Maybe (fromMaybe)
+import Data.Tuple (swap)
 import System.Console.Byline hiding (banner, Menu)
 
 --------------------------------------------------------------------------------
@@ -29,8 +31,7 @@ main = void $ runByline $ do
   -- TODO diagonal wins by color aren't being caught as wins
   endGame <- repeatM play game
 
-  -- TODO print better winner sequence
-  sayLn "Game Over"
+  sayLn ":::::: Thanks for playing! ::::::"
 --------------------------------------------------------------------------------
 
 banner :: Stylized
@@ -46,6 +47,11 @@ play :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
 play game = do
     lift $ sayLn ""
     lift $ sayLn (style game)
+
+    lift $ sayLn "vvv DEBUG vvv"
+    lift $ sayLn (stylize $ show game)
+    lift $ sayLn "^^^ DEBUG ^^^"
+
     player <- hoistMaybe $ case Q.turn game 
         of Left  _ -> Nothing -- game is over
            Right p -> Just p
@@ -58,7 +64,7 @@ play game = do
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
 passTurn player q = (\case 
     Left e   -> sayLn (style $ show e) *> passTurn player q
-    Right q' -> pure q') =<< (pass q player <$> (sayLn (style pieceMenu) *> askForPiece))
+    Right q' -> pure q') =<< (pass q player <$> (sayLn (style $ availablePieceMenu (Pass q)) *> askForPiece q))
 
 placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
 placeTurn player piece q = (\case 
@@ -68,13 +74,13 @@ placeTurn player piece q = (\case
     where convert (Left  a) = Pass  a
           convert (Right a) = Final a
 
-askForPiece :: MonadIO m => Byline m Piece
-askForPiece = do
+askForPiece :: MonadIO m => PassQuarto -> Byline m Piece
+askForPiece q = do
     index  <- askUser
     mPiece <- maybe askIfInvalid (pure . Just) (lookup index)
-    maybe (sayNotValid *> askForPiece) pure mPiece
+    maybe (sayNotValid *> askForPiece q) pure mPiece
     where
-        lookup s = flip M.lookup pieceMenu =<< headMay (T.toUpper s)
+        lookup s = flip M.lookup (availablePieceMenu (Pass q)) =<< headMay (T.toUpper s)
         askUser = ask "pass a piece: " Nothing
         askIfInvalid = lookup <$> (sayNotValid *> askUser)
         sayNotValid = sayLn ("not a valid piece" <> fg red)
@@ -97,7 +103,11 @@ validateTile t = if 2 /= T.length t
           tCap = T.toUpper t
 
 availablePieceMenu :: Quarto -> Map Char Piece
-availablePieceMenu = undefined --TODO use M.delete
+availablePieceMenu q = invertMap $ foldr M.delete (invertMap pieceMenu) (unavailablePieces q)
+
+-- potentially lossy. TODO replace with BiMap
+invertMap :: (Ord k, Ord v) => Map k v -> Map v k    
+invertMap = M.fromList . fmap swap . M.toList
 
 zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
 zipR (Just a, Just b) = Just (a, b)
@@ -179,10 +189,15 @@ instance Style Quarto where
         pieces = flip getPiece q <$> allTiles
         headerText = fromMaybe "" $ 
             winOrTie <|> fmap ((<> " Turn " <> stylize (show (piecesPlaced q))) . style) (eitherToMaybe $ Q.turn q)
-        winOrTie = case q of
-            Final (FinalQuarto _ Tie) -> Just "Tie Game!"
-            Final (FinalQuarto _ (Winner p _)) -> Just (style p <> " Wins!")
-            _ -> Nothing
+        winOrTie = (\case 
+            Tie          -> Just "Tie Game!"
+            (Winner p _) -> Just (style p <> " Wins!")) =<< finalState q
+
+finalState :: Quarto -> Maybe GameEnd
+finalState = \case
+    Final (FinalQuarto _ Tie) -> Just Tie
+    Final (FinalQuarto _ win) -> Just win
+    _ -> Nothing
 
 flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
 flatten2x2 ((w, x), (y, z)) = (w, x, y, z)

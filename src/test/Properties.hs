@@ -82,9 +82,9 @@ prop_meta_FinalQuartoExists = exists arbitrary (\case
                                                   _       -> False)
 
 prop_turn :: Quarto -> Bool
-prop_turn q@(Final _)  = isLeft $ turn q
-prop_turn q@(Pass _)   = turn q == if B.even (getBoard q) then Right P1 else Right P2
-prop_turn q@(Place _)  = turn q == if B.even (getBoard q) then Right P2 else Right P1
+prop_turn q@(Final _) = isLeft $ turn q
+prop_turn q@(Pass _)  = turn q == if B.even (getBoard q) then Right P1 else Right P2
+prop_turn q@(Place _) = turn q == if B.even (getBoard q) then Right P2 else Right P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
 prop_activePieceNotPlaced t p = isLeft $ flip placeQuarto p =<< B.place B.empty t p
@@ -128,6 +128,21 @@ prop_recognizesMultiAttributeWin = finalExists (\case
           Map.empty
           winLines)
 
+prop_unavailablePieces :: Quarto -> Bool
+prop_unavailablePieces q@(Final _) = 
+  allPieces == unavailablePieces q
+prop_unavailablePieces q@(Pass (PassQuarto b)) = 
+  B.size b == length (unavailablePieces q)
+prop_unavailablePieces q@(Place (PlaceQuarto b _)) = 
+  (1 + B.size b) == length (unavailablePieces q)
+
+prop_availablePieces :: Quarto -> Bool
+prop_availablePieces q@(Final _) = 
+  null (availablePieces q)
+prop_availablePieces q@(Pass (PassQuarto b)) = 
+  (16 - B.size b) == length (availablePieces q)
+prop_availablePieces q@(Place (PlaceQuarto b _)) = 
+  1000 == length (availablePieces q)
 
 pure []
 

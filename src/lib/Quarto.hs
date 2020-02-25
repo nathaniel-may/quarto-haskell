@@ -21,6 +21,7 @@ module Quarto (
   -- * functions
   , allPieces
   , allTiles
+  , availablePieces
   , containsPiece
   , empty
   , getPassedPiece
@@ -33,6 +34,7 @@ module Quarto (
   , piecesPlaced
   , lines
   , lineTiles
+  , unavailablePieces
   , winsForLine
   , winningLines) where
 
@@ -97,15 +99,19 @@ getPiece :: Tile -> Quarto -> Maybe Piece
 getPiece t q = get (getBoard q) t
 
 getPassedPiece :: Quarto -> Maybe Piece
-getPassedPiece (Pass  (PassQuarto  _))   = Nothing
 getPassedPiece (Place (PlaceQuarto _ p)) = Just p
-getPassedPiece (Final (FinalQuarto _ _)) = Nothing
+getPassedPiece _                         = Nothing
 
 containsPiece :: Piece -> Quarto -> Bool
-containsPiece p q = not (B.containsPiece (getBoard q) p) && (p `elem` maybeToList (getPassedPiece q))
+containsPiece p q = B.containsPiece (getBoard q) p || (p `elem` getPassedPiece q)
 
 availablePieces :: Quarto -> [Piece]
-availablePieces q = [x | x <- allPieces, not (containsPiece x q)]
+availablePieces (Final _) = []
+availablePieces q         = [x | x <- allPieces, not (containsPiece x q)]
+
+unavailablePieces :: Quarto -> [Piece]
+unavailablePieces (Final _) = allPieces
+unavailablePieces q         = [x | x <- allPieces, containsPiece x q]
 
 pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p

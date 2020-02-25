@@ -26,9 +26,9 @@ instance Arbitrary Player where
   shrink    = shrinkBoundedEnum
 
 instance Arbitrary Turns where
-  arbitrary = Turns . concatMap mkTurns <$> (zip players <$> placements)
+  arbitrary = fmap Turns (take <$> someTurns <*> (concatMap mkTurns <$> (zip players <$> placements)))
     where mkTurns ((pa, pb), (t, p)) = [PassTurn pa p, PlaceTurn pb t]
-  shrink (Turns [])    = []
+  shrink (Turns []) = []
   shrink (Turns ts) = [Turns (init ts)]
 
 instance Arbitrary Quarto where
@@ -99,6 +99,9 @@ newtype Turns = Turns { turns :: [Turn] }
 
 -- Functions
 
+someTurns :: Gen Int
+someTurns = elements [0..16]
+
 takeTurn :: Turn -> Quarto -> Either QuartoTestException Quarto
 takeTurn _              q@(Final _) = Right q
 takeTurn (PassTurn  pl p) (Pass q)  = first QuartoE $ Place <$> pass q pl p
@@ -115,7 +118,7 @@ placements :: Gen [(Tile, Piece)]
 placements = do
   sTiles  <- shuffle allTiles
   sPieces <- shuffle allPieces
-  pure $ zip sTiles sPieces
+  pure (sTiles `zip` sPieces)
 
 -- infinite list of [(P1, P2), (P2, P1) ...]
 players :: [(Player, Player)]
