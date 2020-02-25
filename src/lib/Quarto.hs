@@ -135,8 +135,8 @@ lines = [DiagonalForward, DiagonalBackward]
 lineTiles :: Line -> [Tile]
 lineTiles (Vertical   i)   = flip Tile i <$> enumerate
 lineTiles (Horizontal i)   =      Tile i <$> enumerate
-lineTiles DiagonalForward  = zipWith Tile enumerate $ reverse enumerate
-lineTiles DiagonalBackward = zipWith Tile (reverse enumerate) enumerate
+lineTiles DiagonalForward  = zipWith Tile enumerate (reverse enumerate)
+lineTiles DiagonalBackward = zipWith Tile enumerate enumerate
 
 winsForLine :: Board -> Line -> [WinningLine]
 winsForLine b line = fmap (WinningLine line)
