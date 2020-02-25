@@ -63,20 +63,22 @@ askForPiece :: MonadIO m => Byline m Piece
 askForPiece = do
     index  <- askUser
     mPiece <- maybe askIfInvalid (pure . Just) (lookup index)
-    maybe askForPiece pure mPiece
+    maybe (sayNotValid *> askForPiece) pure mPiece
     where
         lookup s = flip M.lookup pieceMenu =<< headMay (T.toUpper s)
         askUser = ask "pass a piece: " Nothing
-        askIfInvalid = lookup <$> (sayLn ("not a valid piece" <> fg red) *> askUser)
+        askIfInvalid = lookup <$> (sayNotValid *> askUser)
+        sayNotValid = sayLn ("not a valid piece" <> fg red)
 
 askForTile :: MonadIO m => Piece -> Byline m Tile
 askForTile piece = do
     hv    <- askUser
     mTile <- maybe askIfInvalid (pure . Just) (validateTile hv)
-    maybe (askForTile piece) pure mTile
+    maybe (sayNotValid *> askForTile piece) pure mTile
     where
         askUser = ask ("where will you place " <> style piece <> "?: ") Nothing
-        askIfInvalid = validateTile <$> (sayLn ("not a valid tile" <> fg red) *> askUser)
+        askIfInvalid = validateTile <$> (sayNotValid *> askUser)
+        sayNotValid = sayLn ("not a valid tile" <> fg red)
 
 validateTile :: Text -> Maybe Tile
 validateTile t = if 2 /= T.length t
