@@ -1,8 +1,7 @@
-{-# LANGUAGE PatternSynonyms, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Quarto.Types.Internal where
 
-import Text.Read
 import Data.Map (Map, elems)
 import Control.Exception (Exception, displayException)
 
@@ -10,39 +9,10 @@ import Quarto.Lib
 
 -- Types and Instances --
 
-data Color  = White | Black  deriving (Eq, Enum, Ord, Bounded)
-data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded)
-data Height = Tall  | Short  deriving (Eq, Enum, Ord, Bounded)
-data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded)
-
-instance Show Color where
-  show Black = "B"
-  show White = "W"
-
-instance Show Shape where
-  show Round  = "R"
-  show Square = "Q"
-
-instance Show Height where
-  show Tall  = "T"
-  show Short = "S"
-
-instance Show Top where
-  show Flat = "F"
-  show Hole = "H"
-
-readPrecKeywords :: [(String, a)] -> ReadPrec a
-readPrecKeywords attrs = lexP >>= \case
-  Ident attr -> maybe pfail pure $ lookup attr attrs
-  _          -> pfail
-
-readPrecEBS :: (Enum a, Bounded a, Show a) => ReadPrec a
-readPrecEBS = readPrecKeywords [(show x, x) | x <- enumerate]
-
-instance Read Color  where readPrec = readPrecEBS
-instance Read Shape  where readPrec = readPrecEBS
-instance Read Height where readPrec = readPrecEBS
-instance Read Top    where readPrec = readPrecEBS
+data Color  = White | Black  deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Shape  = Round | Square deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Height = Tall  | Short  deriving (Eq, Enum, Ord, Bounded, Show, Read)
+data Top    = Flat  | Hole   deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 data Attribute = W | B | R | Q | S | T | F | H
                deriving (Eq, Enum, Ord, Bounded, Show, Read)
@@ -54,36 +24,13 @@ data Property = PropColor  Color
               deriving (Eq, Ord, Show, Read)
 
 data Piece = Piece Color Shape Height Top
-           deriving (Eq, Ord)
-
-instance Show Piece where
-  show = show <> show <> show <> show
-
-instance Read Piece where
-  readPrec = lexP >>= \case
-    Ident [_,_,_,_] -> Piece <$> readPrec <*> readPrec <*> readPrec <*> readPrec
-    _               -> pfail
+           deriving (Eq, Ord, Show, Read)
 
 data HIndex = HA | HB | HC | HD
-           deriving (Eq, Enum, Ord, Bounded)
+           deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 data VIndex = V1 | V2 | V3 | V4
-          deriving (Eq, Enum, Ord, Bounded)
-
-instance Show HIndex where
-  show HA = "A"
-  show HB = "B"
-  show HC = "C"
-  show HD = "D"
-
-instance Show VIndex where
-  show V1 = "1"
-  show V2 = "2"
-  show V3 = "3"
-  show V4 = "4"
-
-instance Read HIndex where readPrec = readPrecEBS
-instance Read VIndex where readPrec = readPrecEBS
+          deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 data Tile = Tile HIndex VIndex deriving (Eq, Ord, Bounded, Show, Read)
 
