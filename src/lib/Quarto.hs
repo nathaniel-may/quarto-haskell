@@ -133,9 +133,9 @@ place q@(PlaceQuarto b p) pl t
     = B.place t p b <&> \nb ->
         first (const $ passQuarto nb) (finalQuarto nb)
 
-final :: Quarto -> Boolean
+final :: Quarto -> Bool
 final (Final _) = True
-fianl _         = False
+final _         = False
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
