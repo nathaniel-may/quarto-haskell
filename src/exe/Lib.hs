@@ -7,12 +7,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Tuple (swap)
 
-invertMap :: (Ord k, Ord v) => Bimap k v -> Bimap v k    
-invertMap = BM.fromList . fmap swap . BM.toList
-
-zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
-zipR (Just a, Just b) = Just (a, b)
-zipR _                = Nothing
+-- String & Text --
 
 firstTwo :: Text -> Maybe (Char, Char)
 firstTwo t = zipR (headMay t, headMay (T.drop 1 t))
@@ -25,6 +20,8 @@ showCharNoQuotes = trim . show where
     trim (_ : xs) = init xs
     trim _        = undefined -- unreachable
 
+-- Tuples --
+
 flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
 flatten2x2 ((w, x), (y, z)) = (w, x, y, z)
 
@@ -36,9 +33,22 @@ halve [] = ([],[])
 halve xs = (take h xs, drop h xs) where
   h = length xs `div` 2
 
+zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
+zipR (Just a, Just b) = Just (a, b)
+zipR _                = Nothing
+
+-- Either --
+
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Right x) = Just x
 eitherToMaybe _         = Nothing
+
+-- Bimap --
+
+invertMap :: (Ord k, Ord v) => Bimap k v -> Bimap v k    
+invertMap = BM.fromList . fmap swap . BM.toList
+
+-- Maybe T --
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b

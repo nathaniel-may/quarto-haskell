@@ -114,6 +114,18 @@ vFromChar '3' = Just V3
 vFromChar '4' = Just V4
 vFromChar _   = Nothing
 
+finalState :: Quarto -> Maybe GameEnd
+finalState = \case
+    Final (FinalQuarto _ Tie) -> Just Tie
+    Final (FinalQuarto _ win) -> Just win
+    _ -> Nothing
+
+stylize :: String -> Stylized
+stylize = text . T.pack
+
+pieceMenu :: Bimap Char Piece
+pieceMenu = BM.fromList $ (toEnum <$> [65..]) `zip` allPieces
+
 class Style a where
     style :: a -> Stylized
 
@@ -164,15 +176,3 @@ instance Style Quarto where
         winOrTie = (\case 
             Tie          -> Just "Tie Game!"
             (Winner p _) -> Just (style p <> " Wins!")) =<< finalState q
-
-finalState :: Quarto -> Maybe GameEnd
-finalState = \case
-    Final (FinalQuarto _ Tie) -> Just Tie
-    Final (FinalQuarto _ win) -> Just win
-    _ -> Nothing
-
-stylize :: String -> Stylized
-stylize = text . T.pack
-
-pieceMenu :: Bimap Char Piece
-pieceMenu = BM.fromList $ (toEnum <$> [65..]) `zip` allPieces
