@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/nathaniel-may/liquid-quarto.svg?style=svg&circle-token=195d811194c025f04811901b76a5aeb61f2e246b)](https://circleci.com/gh/nathaniel-may/liquid-quarto)
+[![CircleCI](https://circleci.com/gh/nathaniel-may/quarto-haskell.svg?style=svg&circle-token=195d811194c025f04811901b76a5aeb61f2e246b)](https://circleci.com/gh/nathaniel-may/quarto-haskell)
 
 # Quarto Haskell
 
