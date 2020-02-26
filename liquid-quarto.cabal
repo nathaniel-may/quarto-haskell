@@ -43,6 +43,7 @@ executable liquid-quarto
                   , mtl ==2.2.*
                   , bimap ==0.4.*
                   , byline ==0.3.*
+  other-modules:   Lib
   hs-source-dirs:   src/exe
   ghc-options:      -Wall
                     -fno-warn-orphans
