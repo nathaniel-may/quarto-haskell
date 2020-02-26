@@ -58,17 +58,17 @@ prop_allUniqueWorks as = allUnique as == allUniqueSlow as
 
 prop_boardPlace :: Board -> Tile -> Piece -> Bool
 prop_boardPlace b t p
-  | b `B.contains` t || b `B.containsPiece` p
-    = isLeft $ B.place b t p
+  | B.contains t b || B.containsPiece p b
+    = isLeft (B.place t p b)
   | otherwise
-    = B.place b t p == (board . Map.insert t p $ tiles b)
+    = B.place t p b == (board . Map.insert t p $ tiles b)
 
 prop_boardContains :: Board -> Tile -> Bool
 prop_boardContains b t =
-  (not . null . Map.lookup t $ tiles b) `iff` (b `contains` t)
+  (not . null . Map.lookup t $ tiles b) `iff` B.contains t b
 
-prop_boardContainsPiece :: Board -> Piece -> Bool
-prop_boardContainsPiece b p = (p `elem` tiles b) `iff` (b `B.containsPiece` p)
+prop_boardContainsPiece :: Piece -> Board -> Bool
+prop_boardContainsPiece p b = (p `elem` tiles b) `iff` B.containsPiece p b
 
 prop_fullBoard :: Board -> Bool
 prop_fullBoard b = length (tiles b) == 16 `iff` full b
@@ -84,7 +84,7 @@ prop_turn q@(Pass _)  = turn q == if B.even (getBoard q) then Right P1 else Righ
 prop_turn q@(Place _) = turn q == if B.even (getBoard q) then Right P2 else Right P1
 
 prop_activePieceNotPlaced :: Tile -> Piece -> Bool
-prop_activePieceNotPlaced t p = isLeft $ flip placeQuarto p =<< B.place B.empty t p
+prop_activePieceNotPlaced t p = isLeft $ flip placeQuarto p =<< B.place t p B.empty
 
 prop_p1MustStart :: Player -> Piece -> Bool
 prop_p1MustStart pl p = pl == P2 && rejected ||

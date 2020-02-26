@@ -59,7 +59,7 @@ passQuarto = MkPassQuarto
 
 placeQuarto :: Board -> Piece -> Either QuartoException PlaceQuarto
 placeQuarto b p
-  | b `B.containsPiece` p
+  | B.containsPiece p b
     = Left PieceAlreadyOnBoard
   | otherwise
     = Right (MkPlaceQuarto b p)
@@ -96,14 +96,14 @@ piecesPlaced :: Quarto -> Int
 piecesPlaced = size . getBoard
 
 getPiece :: Tile -> Quarto -> Maybe Piece
-getPiece t q = get (getBoard q) t
+getPiece t q = get t (getBoard q)
 
 getPassedPiece :: Quarto -> Maybe Piece
 getPassedPiece (Place (PlaceQuarto _ p)) = Just p
 getPassedPiece _                         = Nothing
 
 containsPiece :: Piece -> Quarto -> Bool
-containsPiece p q = B.containsPiece (getBoard q) p || (p `elem` getPassedPiece q)
+containsPiece p q = B.containsPiece p (getBoard q) || (p `elem` getPassedPiece q)
 
 availablePieces :: Quarto -> [Piece]
 availablePieces (Final _) = []
@@ -117,7 +117,7 @@ pass :: PassQuarto -> Player -> Piece -> Either QuartoException PlaceQuarto
 pass q@(PassQuarto b) pl p
   | not $ isTurn (Pass q) pl
     = Left CannotPassOffTurn
-  | b `B.containsPiece` p
+  | B.containsPiece p b
     = Left CannotPassPlacedPiece
   | otherwise
     = placeQuarto b p
@@ -126,10 +126,10 @@ place :: PlaceQuarto -> Player -> Tile -> Either QuartoException (Either PassQua
 place q@(PlaceQuarto b p) pl t
   | not $ isTurn (Place q) pl
     = Left CannotPlaceOffTurn
-  | b `contains` t
+  | B.contains t b
     = Left CannotPlaceOnOccupiedTile
   | otherwise
-    = B.place b t p <&> \nb ->
+    = B.place t p b <&> \nb ->
         first (const $ passQuarto nb) (finalQuarto nb)
 
 lines :: [Line]
@@ -144,12 +144,12 @@ lineTiles (Horizontal i)   =      Tile i <$> enumerate
 lineTiles DiagonalForward  = zipWith Tile enumerate (reverse enumerate)
 lineTiles DiagonalBackward = zipWith Tile enumerate enumerate
 
-winsForLine :: Board -> Line -> [WinningLine]
-winsForLine b line = fmap (WinningLine line)
+winsForLine :: Line -> Board -> [WinningLine]
+winsForLine line b = fmap (WinningLine line)
                    . concatMap (foldr1 intersect)
                    . nonEmpty
                    . (\x -> if length x == 4 then x else [])
-                   . mapMaybe (fmap attrs . get b) $ lineTiles line
+                   . mapMaybe (fmap attrs . flip get b) $ lineTiles line
 
 winningLines :: Board -> [WinningLine]
-winningLines b = winsForLine b =<< lines
+winningLines b = flip winsForLine b =<< lines

@@ -43,23 +43,21 @@ full b = size b >= 16
 size :: Board -> Int
 size = length . tiles
 
-contains :: Board -> Tile -> Bool
-contains b = not . null . get b
+contains :: Tile -> Board -> Bool
+contains t = not . null . get t
 
-containsPiece :: Board -> Piece -> Bool
-containsPiece b p = p `elem` tiles b
+containsPiece :: Piece -> Board -> Bool
+containsPiece p b = p `elem` tiles b
 
--- TODO can I get rid of the maybe with LH? --
-get :: Board -> Tile -> Maybe Piece
-get b t = Map.lookup t $ tiles b
+get :: Tile -> Board -> Maybe Piece
+get t b = Map.lookup t (tiles b)
 
--- TODO how many restrictions can I place here with LH? --
-place :: Board -> Tile -> Piece -> Either QuartoException Board
-place b t p
-  | b `contains` t       = Left TileOccupied
+place :: Tile -> Piece -> Board -> Either QuartoException Board
+place t p b
+  | contains t b       = Left TileOccupied
     -- this check could be deferred to the board but this exception is clearer for this function
-  | b `containsPiece` p  = Left PieceAlreadyPlaced
-  | otherwise            = board . Map.insert t p $ tiles b
+  | containsPiece p b  = Left PieceAlreadyPlaced
+  | otherwise          = board $ Map.insert t p (tiles b)
 
 even :: Board -> Bool
 even = Prelude.even . size
