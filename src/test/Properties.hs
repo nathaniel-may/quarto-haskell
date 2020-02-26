@@ -74,9 +74,7 @@ prop_fullBoard :: Board -> Bool
 prop_fullBoard b = length (tiles b) == 16 `iff` full b
 
 prop_meta_FinalQuartoExists :: Property
-prop_meta_FinalQuartoExists = exists arbitrary (\case
-                                                  Final _ -> True
-                                                  _       -> False)
+prop_meta_FinalQuartoExists = exists arbitrary final
 
 prop_turn :: Quarto -> Bool
 prop_turn q@(Final _) = isLeft $ turn q

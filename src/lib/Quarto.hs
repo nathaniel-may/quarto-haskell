@@ -24,6 +24,7 @@ module Quarto (
   , availablePieces
   , containsPiece
   , empty
+  , final
   , getPassedPiece
   , getPiece
   , turn
@@ -131,6 +132,10 @@ place q@(PlaceQuarto b p) pl t
   | otherwise
     = B.place t p b <&> \nb ->
         first (const $ passQuarto nb) (finalQuarto nb)
+
+final :: Quarto -> Boolean
+final (Final _) = True
+fianl _         = False
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
