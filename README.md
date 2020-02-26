@@ -20,4 +20,6 @@ stack run
 ```
 
 ### CLI
+The executable is a cli pass & play interface.
+
 ![](./quarto_screenshot.png)
