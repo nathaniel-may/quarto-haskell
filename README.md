@@ -2,4 +2,22 @@
 
 # Liquid Quarto
 
-Haskell implementation of the board game Quarto with liquid types
+Haskell implementation of the board game Quarto with liquid types  
+
+To build
+```
+stack build
+```
+
+To run tests
+```
+stack test
+```
+
+To run cli
+```
+stack run
+```
+
+### CLI
+![](./quarto_screenshot.png)
