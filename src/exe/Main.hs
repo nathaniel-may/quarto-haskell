@@ -52,7 +52,7 @@ play game = do
 
     game' <- case game
         of Final _                       -> hoistMaybe Nothing -- game is over
-           Pass  q                       -> lift $ Place <$> passTurn player q
+           Pass  q                       -> lift (Place <$> passTurn player q)
            Place q@(PlaceQuarto _ piece) -> lift (placeTurn player piece q)
 
     play game'
