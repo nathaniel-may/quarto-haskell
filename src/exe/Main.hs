@@ -12,7 +12,7 @@ import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.Bifunctor (bimap)
 import qualified Data.Bimap as BM
-import Data.Bimap (Bimap)
+import Data.Bimap (Bimap, twist)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -99,7 +99,7 @@ validateTile t = if 2 /= T.length t
           tCap = T.toUpper t
 
 availablePieceMenu :: Quarto -> Bimap Char Piece
-availablePieceMenu q = invertMap $ foldr BM.delete (invertMap pieceMenu) (unavailablePieces q)
+availablePieceMenu q = twist $ foldr BM.delete (twist pieceMenu) (unavailablePieces q)
 
 hFromChar :: Char -> Maybe HIndex
 hFromChar 'A' = Just HA

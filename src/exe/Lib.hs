@@ -43,11 +43,6 @@ eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Right x) = Just x
 eitherToMaybe _         = Nothing
 
--- Bimap --
-
-invertMap :: (Ord k, Ord v) => Bimap k v -> Bimap v k    
-invertMap = BM.fromList . fmap swap . BM.toList
-
 -- Maybe T --
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
