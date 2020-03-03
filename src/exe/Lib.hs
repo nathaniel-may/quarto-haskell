@@ -53,11 +53,3 @@ invertMap = BM.fromList . fmap swap . BM.toList
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
 hoistMaybe = MaybeT . return
-
--- | Case analysis for MaybeT
-maybeT :: Monad m => m b -> (a -> m b) -> MaybeT m a -> m b
-maybeT mb kb (MaybeT ma) = maybe mb kb =<< ma
-
-repeatM :: Monad m => (a -> MaybeT m a) -> a -> m a
-repeatM f = g
-     where g x = maybeT (pure x) g (f x)

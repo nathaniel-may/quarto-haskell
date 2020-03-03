@@ -9,7 +9,7 @@ import Control.Exception (displayException)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans (lift)
-import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.Bifunctor (bimap)
 import qualified Data.Bimap as BM
 import Data.Bimap (Bimap)
@@ -27,7 +27,7 @@ main :: IO ()
 main = void $ runByline $ do
   let game = Q.empty
   sayLn banner
-  _ <- repeatM play game
+  _ <- runMaybeT (play game)
   sayLn ":::::: Thanks for playing! ::::::"
 --------------------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ banner = (fg blue <>) . (bold <>) $ stylize $ unlines [
   , "| |__| | |_| | (_| | |  | || (_) |"
   , " \\___\\_\\\\__,_|\\__,_|_|   \\__\\___/"]
 
+-- recursively plays the whole game from the start state to its conclusion
 play :: MonadIO m => Quarto -> MaybeT (Byline m) Quarto
 play game = do
     lift $ sayLn ""
