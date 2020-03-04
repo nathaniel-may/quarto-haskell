@@ -178,6 +178,6 @@ instance Style Quarto where
         pieces = flip getPiece q <$> allTiles
         headerText = fromMaybe "" $ 
             winOrTie <|> fmap ((<> " Turn " <> stylize (show (piecesPlaced q))) . style) (eitherToMaybe $ Q.turn q)
-        winOrTie = (\case 
+        winOrTie = finalState q >>= (\case 
             Tie          -> Just "Tie Game!"
-            (Winner p _) -> Just (style p <> " Wins!")) =<< finalState q
+            (Winner p _) -> Just (style p <> " Wins!"))
