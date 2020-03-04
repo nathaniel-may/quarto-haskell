@@ -1,16 +1,14 @@
 module Lib where
 
+import Control.Applicative (liftA2)
 import Control.Monad.Trans.Maybe (MaybeT(..))
-import Data.Bimap (Bimap)
-import qualified Data.Bimap as BM
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Tuple (swap)
 
 -- String & Text --
 
 firstTwo :: Text -> Maybe (Char, Char)
-firstTwo t = crossProduct (headMay t, headMay (T.drop 1 t))
+firstTwo t = crossProduct (headMay t) (headMay $ T.drop 1 t)
 
 headMay :: Text -> Maybe Char
 headMay t = if T.null t then Nothing else Just (T.head t)
@@ -33,8 +31,8 @@ halve [] = ([],[])
 halve xs = (take h xs, drop h xs) where
   h = length xs `div` 2
 
-crossProduct :: Applicative f => (f a, f b) -> f (a, b)
-crossProduct (x, y) = (,) <$> x <*> y
+crossProduct :: Applicative f => f a -> f b -> f (a, b)
+crossProduct = liftA2 (,)
 
 -- Either --
 

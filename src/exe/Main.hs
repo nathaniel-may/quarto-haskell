@@ -95,7 +95,7 @@ validateTile :: Text -> Maybe Tile
 validateTile t = if 2 /= T.length t
     then Nothing 
     else toTile tCap <|> toTile (T.reverse tCap)
-    where toTile t' = fmap (uncurry Tile) (crossProduct . bimap hFromChar vFromChar =<< firstTwo t')
+    where toTile t' = fmap (uncurry Tile) (uncurry crossProduct . bimap hFromChar vFromChar =<< firstTwo t')
           tCap = T.toUpper t
 
 availablePieceMenu :: Quarto -> Bimap Char Piece
