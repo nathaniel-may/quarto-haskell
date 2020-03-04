@@ -61,7 +61,7 @@ play game = do
 passTurn :: MonadIO m => Player -> PassQuarto -> Byline m PlaceQuarto
 passTurn player q = (\case 
     Left e   -> sayLn (style $ show e) *> passTurn player q
-    Right q' -> pure q') =<< (pass q player <$> (sayLn (style $ availablePieceMenu (Pass q)) *> askForPiece q))
+    Right q' -> pure q') =<< (pass q player <$> (sayLn (styleMenu $ availablePieceMenu (Pass q)) *> askForPiece q))
 
 placeTurn :: MonadIO m => Player -> Piece -> PlaceQuarto -> Byline m Quarto
 placeTurn player piece q = (\case 
@@ -131,6 +131,11 @@ pieceMenu = BM.fromList $ (toEnum <$> [65..]) `zip` allPieces
 styleListSep :: Style a => Stylized -> [a] -> Stylized
 styleListSep a as = style (intersperse a $ style <$> as)
 
+styleMenu :: Bimap Char Piece -> Stylized
+styleMenu m = pieces <> "\n" <> indexes where
+        pieces  = styleListSep " " (BM.elems m)
+        indexes = " " <> styleListSep "   " (showCharNoQuotes <$> BM.keys m)
+
 class Style a where
     style :: a -> Stylized
 
@@ -156,11 +161,6 @@ instance Style Piece where
 
 instance Style Player where
     style = stylize . show
-
-instance Style (Bimap Char Piece) where
-    style m = pieces <> stylize "\n" <> indexes where
-        pieces  = styleListSep " " (BM.elems m)
-        indexes = " " <> styleListSep "   " (showCharNoQuotes <$> BM.keys m)
 
 instance Style Quarto where
     style q = header <> hIndex <> grid lines <> passed q where
