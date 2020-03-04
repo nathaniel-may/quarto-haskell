@@ -13,6 +13,7 @@ import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.Bifunctor (bimap)
 import qualified Data.Bimap as BM
 import Data.Bimap (Bimap, twist)
+import Data.List (intersperse)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -127,11 +128,20 @@ stylize = text . T.pack
 pieceMenu :: Bimap Char Piece
 pieceMenu = BM.fromList $ (toEnum <$> [65..]) `zip` allPieces
 
+styleListSep :: Style a => Stylized -> [a] -> Stylized
+styleListSep a as = style (intersperse a $ style <$> as)
+
 class Style a where
     style :: a -> Stylized
 
 instance Style Stylized where
     style = id
+
+instance Style a => Style [a] where
+    style = foldr ((<>) . style) ""
+
+instance Style Char where
+    style = stylize . showCharNoQuotes
 
 instance Style Piece where
     style (Piece c s h t) = color c (height h (shape s (top t))) where
@@ -149,14 +159,8 @@ instance Style Player where
 
 instance Style (Bimap Char Piece) where
     style m = pieces <> stylize "\n" <> indexes where
-        pieces  = style (BM.elems m)
-        indexes = stylize " " <> style ((<> " ") . style . showCharNoQuotes <$> BM.keys m)
-
-instance Style Char where
-    style = stylize . showCharNoQuotes
-
-instance Style a => Style [a] where
-    style xs = foldr ((<>) . (<> " ")) "" (style <$> xs)
+        pieces  = styleListSep " " (BM.elems m)
+        indexes = " " <> styleListSep "   " (showCharNoQuotes <$> BM.keys m)
 
 instance Style Quarto where
     style q = header <> hIndex <> grid lines <> passed q where
@@ -167,7 +171,7 @@ instance Style Quarto where
             <> "B |" <> rowTransform b <> "\n"
             <> "C |" <> rowTransform c <> "\n"
             <> "D |" <> rowTransform d <> "\n"
-        rowTransform x = style $ maybe (stylize "   ") style <$> x
+        rowTransform x = styleListSep " " $ maybe (stylize "   ") style <$> x
         passed (Place (PlaceQuarto _ p)) = "To Place: " <> style p <> "\n"
         passed _ = ""
         lines = flatten2x2 $ both halve (halve pieces)
