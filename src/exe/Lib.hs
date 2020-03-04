@@ -10,7 +10,7 @@ import Data.Tuple (swap)
 -- String & Text --
 
 firstTwo :: Text -> Maybe (Char, Char)
-firstTwo t = zipR (headMay t, headMay (T.drop 1 t))
+firstTwo t = crossProduct (headMay t, headMay (T.drop 1 t))
 
 headMay :: Text -> Maybe Char
 headMay t = if T.null t then Nothing else Just (T.head t)
@@ -33,9 +33,8 @@ halve [] = ([],[])
 halve xs = (take h xs, drop h xs) where
   h = length xs `div` 2
 
-zipR :: (Maybe a, Maybe b) -> Maybe (a, b)
-zipR (Just a, Just b) = Just (a, b)
-zipR _                = Nothing
+crossProduct :: Applicative f => (f a, f b) -> f (a, b)
+crossProduct (x, y) = (,) <$> x <*> y
 
 -- Either --
 
@@ -47,4 +46,4 @@ eitherToMaybe _         = Nothing
 
 -- | Lift a 'Maybe' to the 'MaybeT' monad
 hoistMaybe :: (Monad m) => Maybe b -> MaybeT m b
-hoistMaybe = MaybeT . return
+hoistMaybe = MaybeT . pure
