@@ -95,7 +95,7 @@ askForPiece q = do
     mPiece <- maybe askIfInvalid (pure . Just) (lookup index)
     maybe (sayNotValid *> askForPiece q) pure mPiece
     where
-        lookup s = flip BM.lookup (availablePieceMenu (Pass q)) =<< headMay (T.toUpper s)
+        lookup s = flip BM.lookup (availablePieceMenu (Pass q)) =<< textHeadMay (T.toUpper s)
         askUser = ask "pass a piece: " Nothing
         askIfInvalid = lookup <$> (sayNotValid *> askUser)
         sayNotValid = sayLn ("not a valid piece" <> fg red)
