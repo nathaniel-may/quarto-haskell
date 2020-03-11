@@ -17,9 +17,9 @@ import Quarto.Lib
 import qualified Quarto.Board as B
 import Quarto.Board
 
--- Functions --
+-- * Functions
 
--- if and only if --
+-- |if and only if
 iff :: Bool -> Bool -> Bool
 iff = (==)
 infix 3 `iff`
@@ -51,7 +51,7 @@ allUniqueSlow :: Eq a => [a] -> Bool
 allUniqueSlow []     = True
 allUniqueSlow (x:xs) = x `notElem` xs && allUniqueSlow xs
 
--- Properties --
+-- * Properties
 
 prop_allUniqueWorks :: (Ord a) => [a] -> Bool
 prop_allUniqueWorks as = allUnique as == allUniqueSlow as
