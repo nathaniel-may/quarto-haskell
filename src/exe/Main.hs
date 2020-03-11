@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, FlexibleInstances, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings, LambdaCase #-}
 
 module Main (main) where
 
