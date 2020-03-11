@@ -237,7 +237,7 @@ instance Style Quarto where
         rowTransform x = styleListSep " " $ maybe (stylize "   ") style <$> x
         passed (Place (PlaceQuarto _ p)) = "To Place: " <> style p <> "\n"
         passed _ = ""
-        lines = flatten2x2 $ both halve (halve pieces)
+        lines = flatten2x2 $ bimapBoth halve (halve pieces)
         pieces = flip getPiece q <$> allTiles
         headerText = fromMaybe "" $ 
             winOrTie <|> fmap ((<> " Turn " <> stylize (show (piecesPlaced q))) . style) (eitherToMaybe $ Q.turn q)

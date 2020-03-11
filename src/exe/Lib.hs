@@ -8,7 +8,9 @@ a convenient package.
 module Lib where
 
 import Control.Applicative (liftA2)
+import Control.Monad (join)
 import Control.Monad.Trans.Maybe (MaybeT(..))
+import Data.Bifunctor (Bifunctor(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -40,10 +42,6 @@ showCharNoQuotes = trim . show where
 -- |takes a pair of pairs and makes them a single tuple of 4.
 flatten2x2 :: ((a, b), (c, d)) -> (a, b, c, d)
 flatten2x2 ((w, x), (y, z)) = (w, x, y, z)
-
--- |maps both sides of a tuple.
-both :: (a -> b) -> (a, a) -> (b, b)
-both f (x, y) = (f x, f y)
 
 -- |halves a list. If the length is odd, the second half will be longer.
 halve :: [a] -> ([a], [a])
@@ -79,6 +77,12 @@ crossProduct = liftA2 (,)
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Right x) = Just x
 eitherToMaybe _         = Nothing
+
+-- * Bifunctor
+
+-- |maps both sides of a Bifunctor when they are the same type.
+bimapBoth :: Bifunctor p => (a -> b) -> p a a -> p b b
+bimapBoth = join bimap
 
 -- * Maybe T
 
