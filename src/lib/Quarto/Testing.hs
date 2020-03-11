@@ -1,11 +1,11 @@
 {-# Language LambdaCase #-}
------------------------------------------------------------------------------
--- |
--- Module  :  Quarto.Testing
---
--- This module provides Arbitrary instances for testing with QuickCheck
------------------------------------------------------------------------------
 
+{-|
+Module      : Quarto.Testing
+Description : Quickcheck Instances
+
+This module provides Arbitrary instances for testing with QuickCheck
+-}
 module Quarto.Testing where
 
 import qualified Data.Map as Map
@@ -20,7 +20,7 @@ import Quarto.Types.Internal
 import Quarto.Lib
 
 
--- QuickCheck instances
+-- * QuickCheck instances
 
 instance Arbitrary Player where
   arbitrary = arbitraryBoundedEnum
@@ -80,7 +80,7 @@ instance Arbitrary Piece where
     ++ [Piece c  s  h' t  | h' <- shrink h]
     ++ [Piece c  s  h  t' | t' <- shrink t]
 
--- Types
+-- * Types
 
 data QuartoTestException = QuartoE QuartoException | TestE TestException
                          deriving (Eq, Show, Read)
@@ -97,7 +97,7 @@ data Turn = PassTurn Player Piece | PlaceTurn Player Tile
 newtype Turns = Turns { turns :: [Turn] }
               deriving (Eq, Show, Read)
 
--- Functions
+-- * Functions
 
 allTurns :: Gen Turns
 allTurns = Turns . concatMap mkTurns <$> (zip players <$> placements)
