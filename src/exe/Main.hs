@@ -148,13 +148,6 @@ vFromChar '3' = Just V3
 vFromChar '4' = Just V4
 vFromChar _   = Nothing
 
--- |Given a game state, if it is a finished game it pulls out the end result. 
-finalState :: Quarto -> Maybe GameEnd
-finalState = \case
-    Final (FinalQuarto _ Tie) -> Just Tie
-    Final (FinalQuarto _ win) -> Just win
-    _ -> Nothing
-
 -- |Converts String to Stylized
 stylize :: String -> Stylized
 stylize = text . T.pack

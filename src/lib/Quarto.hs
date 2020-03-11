@@ -1,3 +1,5 @@
+{-# Language LambdaCase #-}
+
 module Quarto (
   -- TODO make this export list include all that my users need
   -- * constructors
@@ -25,6 +27,7 @@ module Quarto (
   , containsPiece
   , empty
   , final
+  , finalState
   , getPassedPiece
   , getPiece
   , turn
@@ -136,6 +139,13 @@ place q@(PlaceQuarto b p) pl t
 final :: Quarto -> Bool
 final (Final _) = True
 final _         = False
+
+-- |Given a game state, if it is a finished game it pulls out the end result. 
+finalState :: Quarto -> Maybe GameEnd
+finalState = \case
+    Final (FinalQuarto _ Tie) -> Just Tie
+    Final (FinalQuarto _ win) -> Just win
+    _ -> Nothing
 
 lines :: [Line]
 lines = [DiagonalForward, DiagonalBackward]
